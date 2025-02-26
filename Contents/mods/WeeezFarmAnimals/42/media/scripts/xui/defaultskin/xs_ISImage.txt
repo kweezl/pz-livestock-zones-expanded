@@ -1,0 +1,13 @@
+module Base
+{
+    xuiSkin default
+    {
+        ISImage S_Image_LivestockZonesWindowHeaderIcon
+        {
+            width = 48,
+            height = 48,
+            autoScale = true,
+            texture = media/ui/Zone_Animal_On.png,
+        }
+    }
+}
