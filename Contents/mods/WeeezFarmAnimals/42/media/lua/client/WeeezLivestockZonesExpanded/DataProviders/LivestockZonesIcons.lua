@@ -15,12 +15,12 @@ function LivestockZonesIcons:addAnimalDefinitionsIcons(icons)
 
     for _, animalBreeds in pairs(AnimalDefinitions.breeds) do
         for breedDef, typeBreeds in pairs(animalBreeds.breeds) do
-            breedTypeTitle = getText("IGUI_Breed_" .. breedDef);
+            local breedTypeTitle = getText("IGUI_Breed_" .. breedDef);
 
             for type, text in pairs(config.iconTypes) do
                 local icon = typeBreeds[type];
 
-                if icon and not not duplicates[icon] then
+                if icon and not duplicates[icon] then
                     icons:add({
                         title = breedTypeTitle .. " " .. text,
                         icon = icon,
@@ -34,23 +34,25 @@ end
 
 function LivestockZonesIcons:init()
     if zoneIconsCached then
-        return;
+        return zoneIconsCached;
     end
 
-    icons = ArrayList:new();
+    zoneIconsCached = ArrayList:new();
 
     for _, definition in pairs(config.zoneIcons) do
-        icons:add(definition);
+        zoneIconsCached:add(definition);
     end
 
-    self:addAnimalDefinitionsIcons(icons)
+    self:addAnimalDefinitionsIcons(zoneIconsCached);
+
+    return zoneIconsCached;
 end
 
-function LivestockZonesIcons:getAll(isWithItemIcons, refresh)
-    self:init();
+function LivestockZonesIcons:getAll(isWithItemIcons)
+    local icons = self:init();
 
     if not isWithItemIcons then
-        return zoneIconsCached;
+        return icons;
     end
 
     local zoneIconsWithItems = zoneIconsCached:clone();
