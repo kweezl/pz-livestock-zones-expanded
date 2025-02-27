@@ -30,7 +30,7 @@ function LivestockZonesAnimals:getAllForZone(livestockZone)
 
         for _, animal in pairs(animalsInside) do
             local texture = getTexture(self.animalIcons:getAnimalIcon(animal));
-            animalList:add(livestockZoneAnimal.new(animal, texture));
+            animalList:add(livestockZonesAnimal.new(animal, texture));
         end
     end
 
