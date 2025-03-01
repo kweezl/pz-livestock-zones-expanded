@@ -3,7 +3,7 @@ local LivestockZone = {};
 
 --- @return boolean
 function LivestockZone:exists()
-    return (self.animalZone and self.animalZone:isFullyStreamed());
+    return (self.animalZone and self.animalZone:isStillStreamed());
 end
 
 --- @return DesignationZoneAnimal

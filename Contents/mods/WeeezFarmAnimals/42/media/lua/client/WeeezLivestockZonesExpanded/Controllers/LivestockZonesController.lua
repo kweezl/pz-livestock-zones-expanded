@@ -148,6 +148,7 @@ function LivestockZonesController:getActiveOrFirstZone()
 end
 
 --- @param livestockZone LivestockZone | nil
+--- @return boolean
 function LivestockZonesController:setActiveZone(livestockZone)
     log(DebugType.Zone, "LivestockZonesController:setActiveZone")
 
@@ -155,18 +156,18 @@ function LivestockZonesController:setActiveZone(livestockZone)
         return;
     end
 
-    if ((not livestockZone) or livestockZone:exists() == false) then
-        self.livestockZones = nil;
-        self.activeLivestockZone = nil;
-        self.events.onLivestockZonesUpdated:trigger(self);
-        self.events.onActiveLivestockZoneChanged:trigger(nil);
+    if (livestockZone and livestockZone:exists() == true) then
+        self.activeLivestockZone = livestockZone;
+        self:highlightActiveAnimalZone();
+        self.events.onActiveLivestockZoneChanged:trigger(livestockZone);
 
-        return;
+        return true;
     end
 
-    self.activeLivestockZone = livestockZone;
+    self.activeLivestockZone = nil;
     self.events.onActiveLivestockZoneChanged:trigger(livestockZone);
-    self:highlightActiveAnimalZone();
+
+    return false;
 end
 
 --- @return string
@@ -245,6 +246,7 @@ end
 function LivestockZonesController:resetZones()
     log(DebugType.Zone, "LivestockZonesController:resetZones");
 
+    self.activeLivestockZone = nil;
     self.livestockZones = nil;
     self.events.onLivestockZonesUpdated:trigger(self);
 end
