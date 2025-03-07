@@ -128,9 +128,9 @@ function LivestockZonesInfoAnimals:onMouseDownAnimalListItem(item)
     if hitX and hitY then
         -- open info window
         -- todo: create better info info window and trace duplicates
-        local ui = ISAnimalUI:new(self.animalListItemX + 30, self.animalListItemY, 680, 500, animal, self.player);
-        ui:initialise();
-        ui:addToUIManager();
+        if luautils.walkAdj(self.player, animal:getSquare()) then
+            ISTimedActionQueue.add(ISOpenAnimalInfo:new(self.player, animal, self))
+        end
 
         return;
     end

@@ -50,6 +50,24 @@ function LivestockZonesInfoControls:createChildren()
     self.btnChangeZoneIcon:instantiate();
     self:addChild(self.btnChangeZoneIcon);
 
+    self.btnPetZoneAnimals = ISXuiSkin.build(
+        self.xuiSkin,
+        "S_NeedsAStyle",
+        ISButton,
+        0,
+        0,
+        BUTTON_HGT_SEARCH,
+        BUTTON_HGT_SEARCH,
+        getText("IGUI_DesignationZone_Pet_Animals"),
+        self,
+        self.onPetZoneAnimalsClick
+    );
+    self.btnPetZoneAnimals.enable = true;
+    self.btnPetZoneAnimals:initialise();
+    self.btnPetZoneAnimals:instantiate();
+    self:addChild(self.btnPetZoneAnimals);
+    self.btnPetZoneAnimals:setVisible(false);
+
     self.btnRemoveZone = ISXuiSkin.build(
         self.xuiSkin,
         "S_NeedsAStyle",
@@ -80,6 +98,12 @@ function LivestockZonesInfoControls:onChangeZoneIconClick()
     end
 end
 
+function LivestockZonesInfoControls:onPetZoneAnimalsClick()
+    if (self.onClickPetZoneAnimalsFn and self.onClickPetZoneAnimalsTarget) then
+        self.onClickPetZoneAnimalsFn(self.onClickPetZoneAnimalsTarget);
+    end
+end
+
 function LivestockZonesInfoControls:onRemoveZoneClick()
     if (self.onClickRemoveZoneTarget and self.onClickRemoveZoneFn) then
         self.onClickRemoveZoneFn(self.onClickRemoveZoneTarget);
@@ -103,7 +127,6 @@ function LivestockZonesInfoControls:update()
 end
 
 function LivestockZonesInfoControls:close()
-    print("LivestockZonesInfoControls:close")
     ISPanel.close(self);
 end
 
@@ -112,12 +135,18 @@ function LivestockZonesInfoControls:calculateLayout(preferredWidth, preferredHei
     local width = math.max(self.minimumWidth, preferredWidth or 0);
     local measuredHeight = 10 + self.btnRenameZone:getHeight();
     height = math.max(height, measuredHeight);
+    local leftPad = 0;
 
     self.btnRenameZone:setX(5);
     self.btnRenameZone:setY(5);
 
     self.btnChangeZoneIcon:setX(10 + self.btnRenameZone:getWidth());
     self.btnChangeZoneIcon:setY(5);
+    leftPad = 5 + self.btnRenameZone:getWidth();
+
+    self.btnPetZoneAnimals:setX(leftPad);
+    self.btnPetZoneAnimals:setY(5);
+    leftPad = leftPad + 5 + self.btnPetZoneAnimals:getWidth();
 
     self.btnRemoveZone:setX(width - 5 - self.btnRemoveZone:getWidth());
     self.btnRemoveZone:setY(5);
@@ -138,6 +167,13 @@ end
 function LivestockZonesInfoControls:setOnClickChangeZoneIcon(target, fn)
     self.onClickChangeZoneIconTarget = target;
     self.onClickChangeZoneIconFn = fn;
+end
+
+--- @param target table
+--- @param fn function
+function LivestockZonesInfoControls:setOnClickPetZoneAnimals(target, fn)
+    self.onClickPetZoneAnimalsTarget = target;
+    self.onClickPetZoneAnimalsFn = fn;
 end
 
 --- @param target table
@@ -170,6 +206,9 @@ function LivestockZonesInfoControls:new(x, y, width, height, player, zoneControl
 
     o.onClickChangeZoneIconTarget = nil;
     o.onClickChangeZoneIconFn = nil;
+
+    o.onClickPetZoneAnimalsTarget = nil;
+    o.onClickPetZoneAnimalsFn = nil;
 
     o.onClickRemoveZoneTarget = nil;
     o.onClickRemoveZoneFn = nil;

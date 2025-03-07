@@ -61,8 +61,6 @@ function LivestockZonesInfo:createDynamicChildren()
     end
 
     if not self.livestockZone then
-        print("LivestockZonesInfo:createDynamicChildren no active zone 2")
-
         self:setWidth(0);
         self:setVisible(false);
         self:xuiRecalculateLayout();
@@ -79,14 +77,11 @@ function LivestockZonesInfo:createDynamicChildren()
 end
 
 function LivestockZonesInfo:onActiveLivestockZoneChanged(livestockZone)
-    local name = livestockZone and livestockZone:getName() or "no active zone"
-    print("LivestockZonesInfo:onActiveLivestockZoneChange " .. name)
     self.livestockZone = livestockZone;
     self:createDynamicChildren();
 end
 
-function LivestockZonesInfo:createTitlePanel(parentTable)
-    print("LivestockZonesInfo:createTitlePane")
+function LivestockZonesInfo:createTitlePanel()
     ---@type LivestockZonesInfoTitle
     self.titlePanel = ISXuiSkin.build(
         self.xuiSkin,
@@ -105,7 +100,6 @@ function LivestockZonesInfo:createTitlePanel(parentTable)
 end
 
 function LivestockZonesInfo:createControlsPanel()
-    print("LivestockZonesInfo:createControlsPanel")
     ---@type LivestockZonesInfoControls
     self.controlsPanel = ISXuiSkin.build(
         self.xuiSkin,
@@ -128,7 +122,6 @@ function LivestockZonesInfo:createControlsPanel()
 end
 
 function LivestockZonesInfo:createModifyPanel()
-    print("LivestockZonesInfo:createControlsPanel")
     ---@type LivestockZonesInfoModify
     self.modifyPanel = ISXuiSkin.build(
         self.xuiSkin,
@@ -152,7 +145,6 @@ function LivestockZonesInfo:createModifyPanel()
 end
 
 function LivestockZonesInfo:createDetailsPanel()
-    print("LivestockZonesInfo:createDetailsPanel")
     ---@type LivestockZonesInfoControls
     self.detailsPanel = ISXuiSkin.build(
         self.xuiSkin,
@@ -172,7 +164,6 @@ function LivestockZonesInfo:createDetailsPanel()
 end
 
 function LivestockZonesInfo:createAnimalsPanel()
-    print("LivestockZonesInfo:createDetailsPanel")
     ---@type LivestockZonesInfoControls
     self.animalsPanel = ISXuiSkin.build(
         self.xuiSkin,

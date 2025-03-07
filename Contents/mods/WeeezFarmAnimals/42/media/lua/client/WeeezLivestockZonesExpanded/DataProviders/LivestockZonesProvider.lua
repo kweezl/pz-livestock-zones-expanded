@@ -123,8 +123,6 @@ end
 --- @param livestockZone LivestockZone
 --- @return boolean
 function LivestockZonesProvider:updateZoneProperties(livestockZone)
-    print("LivestockZonesProvider:updateZoneProperties " .. livestockZone:getName())
-
     local zone = livestockZone:getAnimalZone();
 
     if not zone:isStillStreamed() then
@@ -133,8 +131,6 @@ function LivestockZonesProvider:updateZoneProperties(livestockZone)
 
     zone:setName(livestockZone:getName());
     self.storage:update(zone:getId());
-
-    print ("LivestockZonesProvider:updateZoneProperties" .. zone:getName())
 
     return true;
 end

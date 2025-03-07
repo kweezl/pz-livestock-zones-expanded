@@ -148,11 +148,8 @@ function LivestockZoneStats:getAll()
 
         if fn then
             result:add(fn(self));
-            --print (stat, fn(self));
-            print("LivestockZoneStats:getAll", stat, fn(self))
         else
             result:add(nil);
-            print("LivestockZoneStats:getAll", stat, "not found")
         end
     end
 

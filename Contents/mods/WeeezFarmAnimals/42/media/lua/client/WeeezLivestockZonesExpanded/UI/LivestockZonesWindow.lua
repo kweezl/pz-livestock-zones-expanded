@@ -180,17 +180,13 @@ function LivestockZonesWindow:update()
         return false;
     end
 
-    local valid = false;
+    if not self.player then
+        self:close();
 
-    if self.player and (not self.player:getVehicle()) then
-        valid = true;
+        return false;
     end
 
-    if not valid then
-       self:close();
-    end
-    
-    return valid;
+    return true;
 end
 
 function LivestockZonesWindow:close()
@@ -207,7 +203,7 @@ function LivestockZonesWindow:close()
     if self.windowBody then
         self.windowBody:close();
     end
-    
+
     ISCollapsableWindow.close(self);
     ISEntityUI.OnCloseWindow(self);
 
@@ -302,7 +298,7 @@ function LivestockZonesWindow:new(x, y, width, height, player, zoneController)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = nil;
-    
+
     o.resizable = style.resizeable;
     o.enableHeader = style.enableHeader;
 

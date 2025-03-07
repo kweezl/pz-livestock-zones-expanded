@@ -37,12 +37,17 @@ end
 
 --- @return boolean
 function LivestockZonesAnimal:isCanBePet()
-    return self.animal:canBePet();
+    return self.animal:canBePet() and self.animal:isAlive();
 end
 
 --- @return boolean
 function LivestockZonesAnimal:isOutsideHutch()
     return not self.animal:getHutch();
+end
+
+--- @return boolean
+function LivestockZonesAnimal:isInVehicle()
+    return not self.animal:getVehicle() ~= nil;
 end
 
 --- @return boolean

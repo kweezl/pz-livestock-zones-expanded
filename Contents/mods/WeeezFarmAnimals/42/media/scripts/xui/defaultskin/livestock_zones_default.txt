@@ -14,5 +14,13 @@ module Base
             padding             = 0,
             margin              = 0,
         }
+
+        ISImage S_Image_LivestockZonesWindowHeaderIcon
+        {
+            width = 48,
+            height = 48,
+            autoScale = true,
+            texture = media/ui/Zone_Animal_On.png,
+        }
     }
 }

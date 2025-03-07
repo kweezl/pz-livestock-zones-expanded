@@ -10,8 +10,6 @@ local livestockZonesAnimalTypes = {};
 local LivestockZonesAnimalTypes = {};
 
 function LivestockZonesAnimalTypes:init()
-    print("LivestockZonesAnimalTypes:init")
-
     local animals = AnimalDefinitions.animals;
     self.groups = {};
     self.types = {};

@@ -45,8 +45,6 @@ end
 --- @param name string
 --- @return boolean
 function LivestockZonesController:setZoneName(livestockZone, name)
-    print("LivestockZonesController:setZoneName " .. livestockZone:getName() .. " : " .. name)
-
     if not livestockZone or not name then
         return;
     end
@@ -77,8 +75,6 @@ end
 --- @param icon string
 --- @return boolean
 function LivestockZonesController:setZoneIcon(livestockZone, icon)
-    print("LivestockZonesController:setZoneIcon " .. livestockZone:getName() .. " : " .. icon)
-
     if not livestockZone or not icon then
         return;
     end

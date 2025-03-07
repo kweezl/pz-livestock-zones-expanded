@@ -22,4 +22,5 @@ IGUI_EN = {
     IGUI_DesignationZone_Add_New_Zone = "Add zone",
     IGUI_DesignationZone_Dung = "Dung:"
     IGUI_DesignationZone_Feathers = "Feathers:"
+    IGUI_DesignationZone_Pet_Animals = "Pet animals:"
 }
