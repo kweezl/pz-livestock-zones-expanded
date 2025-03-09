@@ -66,7 +66,6 @@ function LivestockZonesInfoControls:createChildren()
     self.btnPetZoneAnimals:initialise();
     self.btnPetZoneAnimals:instantiate();
     self:addChild(self.btnPetZoneAnimals);
-    self.btnPetZoneAnimals:setVisible(false);
 
     self.btnRemoveZone = ISXuiSkin.build(
         self.xuiSkin,
@@ -100,7 +99,7 @@ end
 
 function LivestockZonesInfoControls:onPetZoneAnimalsClick()
     if (self.onClickPetZoneAnimalsFn and self.onClickPetZoneAnimalsTarget) then
-        self.onClickPetZoneAnimalsFn(self.onClickPetZoneAnimalsTarget);
+        self.onClickPetZoneAnimalsFn(self.onClickPetZoneAnimalsTarget, self.livestockZone);
     end
 end
 
@@ -140,13 +139,13 @@ function LivestockZonesInfoControls:calculateLayout(preferredWidth, preferredHei
     self.btnRenameZone:setX(5);
     self.btnRenameZone:setY(5);
 
-    self.btnChangeZoneIcon:setX(10 + self.btnRenameZone:getWidth());
+    leftPad = 10 + self.btnRenameZone:getWidth();
+    self.btnChangeZoneIcon:setX(leftPad);
     self.btnChangeZoneIcon:setY(5);
-    leftPad = 5 + self.btnRenameZone:getWidth();
 
+    leftPad = leftPad + 5 + self.btnChangeZoneIcon:getWidth();
     self.btnPetZoneAnimals:setX(leftPad);
     self.btnPetZoneAnimals:setY(5);
-    leftPad = leftPad + 5 + self.btnPetZoneAnimals:getWidth();
 
     self.btnRemoveZone:setX(width - 5 - self.btnRemoveZone:getWidth());
     self.btnRemoveZone:setY(5);

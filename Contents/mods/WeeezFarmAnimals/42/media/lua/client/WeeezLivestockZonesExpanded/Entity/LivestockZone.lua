@@ -2,6 +2,11 @@
 local LivestockZone = {};
 
 --- @return boolean
+function LivestockZone:getId()
+    return self.animalZone:getId();
+end
+
+--- @return boolean
 function LivestockZone:exists()
     return (self.animalZone and self.animalZone:isStillStreamed());
 end

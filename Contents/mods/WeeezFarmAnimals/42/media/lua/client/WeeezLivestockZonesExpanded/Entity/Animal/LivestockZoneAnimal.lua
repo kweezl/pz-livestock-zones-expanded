@@ -5,6 +5,11 @@ local livestockZonesAnimal = {};
 --- @class LivestockZonesAnimal
 local LivestockZonesAnimal = {};
 
+--- @return number
+function LivestockZonesAnimal:getId()
+    return self.animal:getAnimalID();
+end
+
 --- @return AnimalData
 function LivestockZonesAnimal:getData()
     return self.animal:getData();
@@ -47,7 +52,7 @@ end
 
 --- @return boolean
 function LivestockZonesAnimal:isInVehicle()
-    return not self.animal:getVehicle() ~= nil;
+    return self.animal:getVehicle() ~= nil;
 end
 
 --- @return boolean

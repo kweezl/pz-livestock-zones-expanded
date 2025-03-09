@@ -11,5 +11,8 @@ livestockZonesEvents.onLivestockZonePropertyChangeBegin = events.new();
 livestockZonesEvents.onLivestockZonePropertyChangeEnd = events.new();
 livestockZonesEvents.onActiveLivestockZoneChanged = events.new();
 livestockZonesEvents.onLivestockZonesUpdated = events.new();
+livestockZonesEvents.onPetAnimalAction = events.new();
+livestockZonesEvents.onPetZoneAnimalsStart = events.new();
+livestockZonesEvents.onPetZoneAnimalsStop = events.new();
 
 return livestockZonesEvents;

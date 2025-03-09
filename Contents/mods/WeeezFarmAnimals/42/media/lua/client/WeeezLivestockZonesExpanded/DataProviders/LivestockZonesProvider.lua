@@ -1,4 +1,5 @@
-local LivestockZone = require("WeeezLivestockZonesExpanded/Entity/LivestockZone")
+local quicksort = require("WeeezLivestockZonesExpanded/lib/quicksort");
+local LivestockZone = require("WeeezLivestockZonesExpanded/Entity/LivestockZone");
 
 --- @module livestockZonesProvider
 local livestockZonesProvider = {}
@@ -88,7 +89,7 @@ function LivestockZonesProvider:getAll(filterText, filterAnimalGroup)
             collectedZones[zoneId] = 1;
 
             -- don't show zone that's not streamed or filtered
-            if zone:isStillStreamed() and self:isAllowedByFilter(zone, filterText, filterAnimalGroup) then
+            if zone:isFullyStreamed() and self:isAllowedByFilter(zone, filterText, filterAnimalGroup) then
                 local data = self.storage:get(zoneId);
 
                 if not data.icon then
@@ -109,6 +110,12 @@ function LivestockZonesProvider:getAll(filterText, filterAnimalGroup)
             end
         end
     end
+
+    local comparator = function(left, right)
+        return left:getId() <= right:getId();
+    end
+
+    quicksort(list, comparator);
 
     return list;
 end

@@ -1,8 +1,5 @@
 require("ISUI/ISPanel");
 
-local config = require("WeeezLivestockZonesExpanded/Defaults/Config");
-local styles = require("WeeezLivestockZonesExpanded/Defaults/Styles");
-
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local MIN_LIST_BOX_WIDTH = 125 * FONT_SCALE;
@@ -54,6 +51,19 @@ function LivestockZonesInfoAnimals:createChildren()
     self:populateAnimalList();
 end
 
+--- @param animal LivestockZonesAnimal
+function LivestockZonesInfoAnimals:setAnimalSelected(animal)
+    local items = self.animalList.items;
+
+    for i = 1, #items do
+        local itemAnimal = items[i].item;
+        if itemAnimal:getId() == animal:getId() then
+            self.animalList.selected = i;
+            self.animalList:ensureVisible(i);
+        end
+    end
+end
+
 function LivestockZonesInfoAnimals:populateAnimalList()
     local animals = self.animalsProvider:getAllForZone(self.livestockZone);
 
@@ -93,13 +103,18 @@ function LivestockZonesInfoAnimals:drawAnimalItem(list, y, item)
     -- scroll bar width 17
     local iconBorderX = width - itemPadY - 20 - 17;
     local iconBorderY = y + itemPadY;
-    list:drawRectBorder(iconBorderX, iconBorderY, 20, 20, self.infoBorderColor.a, self.infoBorderColor.r, self.infoBorderColor.g, self.infoBorderColor.b);
-    list:drawTextureScaledAspect2(self.infoTexture, iconBorderX + 2, iconBorderY + 2, 16, 16, 1, 1, 1, 1);
+
+    -- animal info icon
+    if animal:isOutsideHutch() then
+        list:drawRectBorder(iconBorderX, iconBorderY, 20, 20, self.infoBorderColor.a, self.infoBorderColor.r, self.infoBorderColor.g, self.infoBorderColor.b);
+        list:drawTextureScaledAspect2(self.infoTexture, iconBorderX + 2, iconBorderY + 2, 16, 16, 1, 1, 1, 1);
+        iconBorderX = iconBorderX - 25;
+    end
 
     -- animal pet action icon
     if animal:isCanBePet() and animal:isOutsideHutch() then
-        list:drawRectBorder(iconBorderX - 25, iconBorderY, 20, 20, self.infoBorderColor.a, self.infoBorderColor.r, self.infoBorderColor.g, self.infoBorderColor.b);
-        list:drawTextureScaledAspect2(self.petTexture, iconBorderX - 23, iconBorderY + 2, 16, 16, 1, 1, 1, 1);
+        list:drawRectBorder(iconBorderX, iconBorderY, 20, 20, self.infoBorderColor.a, self.infoBorderColor.r, self.infoBorderColor.g, self.infoBorderColor.b);
+        list:drawTextureScaledAspect2(self.petTexture, iconBorderX + 2, iconBorderY + 2, 16, 16, 1, 1, 1, 1);
     end
 
     -- animal name

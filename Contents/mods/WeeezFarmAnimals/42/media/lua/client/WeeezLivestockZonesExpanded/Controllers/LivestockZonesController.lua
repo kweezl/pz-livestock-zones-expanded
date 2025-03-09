@@ -9,6 +9,7 @@ local livestockZonesController = {};
 --- @field private storage LivestockZonesStorage
 --- @field private animalTypes LivestockZonesAnimalTypes
 --- @field private zonesIcons LivestockZonesIcons
+--- @field private petZoneAnimals PetZoneAnimals
 --- @field private events LivestockZonesEvents
 --- @field private livestockZones ArrayList | nil
 --- @field private activeLivestockZone LivestockZone | nil
@@ -21,7 +22,7 @@ local LivestockZonesController = {};
 function LivestockZonesController:getZonesIcons()
     return self.zonesIcons;
 end
---- @return LivestockZonesIcons
+--- @return LivestockZonesAnimals
 function LivestockZonesController:getAnimalsProvider()
     return self.animalsProvider;
 end
@@ -39,6 +40,36 @@ end
 --- @return LivestockZonesEvents
 function LivestockZonesController:getEvents()
     return self.events;
+end
+
+--- @param livestockZone LivestockZone
+--- @return boolean
+function LivestockZonesController:startPetZoneAnimals(livestockZone)
+    if self.petZoneAnimals:isRunning() then
+        if self.petZoneAnimals:getLivestockZone():getId() == livestockZone:getId() then
+            -- same zone
+            return;
+        end
+
+        self.petZoneAnimals:stop();
+    end
+
+    if not livestockZone:getAnimalZone():isStillStreamed() then
+        return false;
+    end
+
+    return self.petZoneAnimals:start(self.player, livestockZone);
+end
+
+function LivestockZonesController:stopPetZoneAnimals()
+    if self.petZoneAnimals:isRunning() then
+        self.petZoneAnimals:stop();
+    end
+end
+
+--- @return PetZoneAnimals
+function LivestockZonesController:getPetZoneAnimals()
+    return self.petZoneAnimals;
 end
 
 --- @param livestockZone LivestockZone
@@ -311,6 +342,7 @@ end
 --- @param storage LivestockZonesStorage
 --- @param animalTypes LivestockZonesAnimalTypes
 --- @param zonesIcons LivestockZonesIcons
+--- @param petZoneAnimals PetZoneAnimals
 --- @param events LivestockZonesEvents
 --- @param filterTextDefault string
 --- @return LivestockZonesController
@@ -322,6 +354,7 @@ function livestockZonesController.new(
     storage,
     animalTypes,
     zonesIcons,
+    petZoneAnimals,
     events,
     filterTextDefault
 )
@@ -335,6 +368,7 @@ function livestockZonesController.new(
     self.storage = storage;
     self.animalTypes = animalTypes;
     self.zonesIcons = zonesIcons;
+    self.petZoneAnimals = petZoneAnimals;
     self.events = events;
 
     self.filterTextDefault = filterTextDefault;

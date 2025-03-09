@@ -1,5 +1,5 @@
-local livestockZonesAnimal = require("WeeezLivestockZonesExpanded/Entity/Animal/LivestockZoneAnimal")
-
+local quicksort = require("WeeezLivestockZonesExpanded/lib/quicksort");
+local livestockZonesAnimal = require("WeeezLivestockZonesExpanded/Entity/Animal/LivestockZoneAnimal");
 
 --- @module livestockZonesAnimals
 local livestockZonesAnimals = {};
@@ -33,6 +33,12 @@ function LivestockZonesAnimals:getAllForZone(livestockZone)
             animalList:add(livestockZonesAnimal.new(animal, texture));
         end
     end
+
+    local comparator = function(left, right)
+        return left:getId() <= right:getId();
+    end
+
+    quicksort(animalList, comparator);
 
     return animalList;
 end
