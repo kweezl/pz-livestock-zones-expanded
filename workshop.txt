@@ -1,0 +1,47 @@
+version=1
+id=3434810293
+title=Livestock zones expanded
+description=Designation animal zones UI, actions, animals info and more.
+description=
+description=Build 42 only.
+description=
+description=[b]This mod is wip, expect some bugs.[/b]
+description=
+description=It's safe to add and remove from existing games. The mod stores zone icons in moddata, so it is advisable to remove the changed zones before uninstalling the mod, but this is not required.
+description=
+description=[h2]Features:[/h2]
+description=[list]
+description=[*] new interface for designating animal zones
+description=[*] new animals interface
+description=[*] easy access animal actions, pet animals from interface window
+description=[*] more stats details
+description=[/list]
+description=
+description=[h2]Planned:[/h2]
+description=[list]
+description=[*] better tooltips
+description=[*] more actions
+description=[*] animal info window rework
+description=[*] animal moodle
+description=[*] animal world icons
+description=[/list]
+description=
+description=[h2]Know issues:[/h2]
+description=[list]
+description=[*] new desination zone double clicks or click after zone placed (vanila bug)
+description=[*] no vanilla racoon icon texture
+description=[*] no data auto refresh yet
+description=[*] no mp features
+description=[/list]
+description=
+description=[h2]Notes:[/h2]
+description=Please report issues to the  [url=https://github.com/kweezl/pz-livestock-zones-expanded/issues][u]Github[/u][/url] issues page if possible, so that they don't get lost.
+description=You are welcome to contribute on [url=https://github.com/kweezl/pz-livestock-zones-expanded/][u]Github[/u][/url].
+description=To disscuss welcome to  PZ Modding community Discord https://discord.gg/TM44Ump6.
+description=
+description=[h2]Special thanks to:[/h2]
+description=[list]
+description=[*] [url=https://steamcommunity.com/id/yayieali]@yayie[/url] for testing and error reporting
+description=[/list]
+tags=Build 42;Animals;QoL;WIP
+visibility=public
