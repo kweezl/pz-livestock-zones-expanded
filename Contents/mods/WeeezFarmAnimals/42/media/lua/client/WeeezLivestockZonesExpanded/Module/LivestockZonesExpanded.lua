@@ -7,6 +7,7 @@ local livestockZonesIcons = require("WeeezLivestockZonesExpanded/DataProviders/L
 local livestockZonesStatsProvider = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesStatsProvider");
 local livestockZonesAnimalTypes = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalTypes");
 local livestockZonesController = require("WeeezLivestockZonesExpanded/Controllers/LivestockZonesController");
+local petZoneAnimals = require("WeeezLivestockZonesExpanded/TimedActions/PetZoneAnimals");
 
 --- @type LivestockZonesIcons
 local zonesIcons;
@@ -22,6 +23,8 @@ local zoneStatsProvider;
 local zonesController;
 --- @type LivestockZonesStorage
 local zonesStorage;
+--- @type PetZoneAnimals
+local petAnimals;
 
 ---@module livestockZonesExpanded
 local livestockZonesExpanded = {};
@@ -92,6 +95,19 @@ function livestockZonesExpanded.getZonesStorage()
     return zonesStorage;
 end
 
+--- @param player IsoPlayer
+--- @return LivestockZonesStorage
+function livestockZonesExpanded.getPetZoneAnimals(player)
+    assert(instanceof(player, "IsoPlayer"), "Player object required");
+
+    if not petAnimals then
+        petAnimals = petZoneAnimals.new(livestockZonesExpanded.getAnimalsProvider(player));
+    end
+
+    return petAnimals;
+end
+
+--- @param player IsoPlayer
 --- @return LivestockZonesController
 function livestockZonesExpanded.getZonesController(player)
     assert(instanceof(player, "IsoPlayer"), "Player object required");
@@ -105,6 +121,7 @@ function livestockZonesExpanded.getZonesController(player)
             livestockZonesExpanded.getZonesStorage(),
             livestockZonesExpanded.getAnimalTypes(),
             livestockZonesExpanded.getZonesIcons(),
+            livestockZonesExpanded.getPetZoneAnimals(player),
             events,
             config.filterAllTextDefault
         );

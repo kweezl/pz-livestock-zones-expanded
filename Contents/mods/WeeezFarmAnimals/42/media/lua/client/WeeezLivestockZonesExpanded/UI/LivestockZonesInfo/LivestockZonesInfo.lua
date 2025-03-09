@@ -1,14 +1,11 @@
-require("ISUI/ISPanel")
-
-local config = require("WeeezLivestockZonesExpanded/Defaults/Config")
-local styles = require("WeeezLivestockZonesExpanded/Defaults/Styles")
+require("ISUI/ISPanel");
 
 --- @class LivestockZonesInfo: ISPanel
 --- @field private zoneController LivestockZonesController
 --- @field private livestockZone LivestockZone | nil
 --- @field private titlePanel LivestockZonesInfoTitle | nil
 --- @field private controlsPanel LivestockZonesInfoControls | nil
---- @field private modifyPanel LivestockZonesInfoModify | nil
+--- @field private overlayPanel LivestockZonesInfoOverlay | nil
 --- @field private detailsPanel LivestockZonesInfoDetails | nil
 --- @field private animalsPanel LivestockZonesInfoAnimals | nil
 LivestockZonesInfo = ISPanel:derive("LivestockZonesInfo");
@@ -16,15 +13,16 @@ LivestockZonesInfo = ISPanel:derive("LivestockZonesInfo");
 function LivestockZonesInfo:initialise()
     ISPanel.initialise(self);
 
-    log(DebugType.Zone, "Creating LivestockZonesInfo")
+    log(DebugType.Zone, "Creating LivestockZonesInfo");
+
+    local events = self.zoneController:getEvents();
+    events.onActiveLivestockZoneChanged:addListener(self.onActiveLivestockZoneChangedListener);
+    events.onPetAnimalAction:addListener(self.onPetAnimalListener);
+    events.onPetZoneAnimalsStop:addListener(self.onPetAnimalsStopListener);
 end
 
 function LivestockZonesInfo:createChildren()
     ISPanel.createChildren(self);
-
-    local events = self.zoneController:getEvents();
-    events.onActiveLivestockZoneChanged:addListener(self.onActiveLivestockZoneChangedListener);
-
     self:createDynamicChildren();
 end
 
@@ -39,9 +37,9 @@ function LivestockZonesInfo:createDynamicChildren()
         self.controlsPanel = nil;
     end
 
-    if self.modifyPanel then
-        ISUIElement.removeChild(self, self.modifyPanel);
-        self.modifyPanel = nil;
+    if self.overlayPanel then
+        ISUIElement.removeChild(self, self.overlayPanel);
+        self.overlayPanel = nil;
     end
 
     if self.detailsTable then
@@ -70,15 +68,10 @@ function LivestockZonesInfo:createDynamicChildren()
     ISPanel.setVisible(self, true);
     self:createTitlePanel();
     self:createControlsPanel();
-    self:createModifyPanel();
+    self:createOverlayPanel();
     self:createDetailsPanel();
     self:createAnimalsPanel();
     self:xuiRecalculateLayout();
-end
-
-function LivestockZonesInfo:onActiveLivestockZoneChanged(livestockZone)
-    self.livestockZone = livestockZone;
-    self:createDynamicChildren();
 end
 
 function LivestockZonesInfo:createTitlePanel()
@@ -115,18 +108,19 @@ function LivestockZonesInfo:createControlsPanel()
     self.controlsPanel:setOnClickRenameZone(self, self.onClickRenameZone);
     self.controlsPanel:setOnClickChangeZoneIcon(self, self.onClickChangeZoneIcon);
     self.controlsPanel:setOnClickRemoveZone(self, self.onClickRemoveZone);
+    self.controlsPanel:setOnClickPetZoneAnimals(self, self.onClickPetZoneAnimals);
     self.controlsPanel:initialise();
     self.controlsPanel:instantiate();
     self:addChild(self.controlsPanel);
     self.controlsPanel.drawDebugLines = self.drawDebugLines;
 end
 
-function LivestockZonesInfo:createModifyPanel()
-    ---@type LivestockZonesInfoModify
-    self.modifyPanel = ISXuiSkin.build(
+function LivestockZonesInfo:createOverlayPanel()
+    ---@type LivestockZonesInfoOverlay
+    self.overlayPanel = ISXuiSkin.build(
         self.xuiSkin,
         "S_NeedsAStyle",
-        LivestockZonesInfoModify,
+        LivestockZonesInfoOverlay,
         0,
         0,
         10,
@@ -134,14 +128,17 @@ function LivestockZonesInfo:createModifyPanel()
         self.zoneController:getZonesIcons(),
         self.livestockZone
     );
-    self.modifyPanel:setOnRename(self, self.onActionRenameZone);
-    self.modifyPanel:setOnChangeIcon(self, self.onActionChangeZoneIcon);
-    self.modifyPanel:setOnRemove(self, self.onActionRemoveZone);
-    self.modifyPanel:initialise();
-    self.modifyPanel:instantiate();
-    self:addChild(self.modifyPanel);
-    self.modifyPanel:setVisible(false);
-    self.modifyPanel.drawDebugLines = self.drawDebugLines;
+    self.overlayPanel:setOnRename(self, self.onActionRenameZone);
+    self.overlayPanel:setOnChangeIcon(self, self.onActionChangeZoneIcon);
+    self.overlayPanel:setOnRemove(self, self.onActionRemoveZone);
+    self.overlayPanel:setOnCancelPetAnimals(self, self.onActionCancelPetAnimals);
+    self.overlayPanel:initialise();
+    self.overlayPanel:instantiate();
+    self:addChild(self.overlayPanel);
+    self.overlayPanel:setVisible(false);
+    self.overlayPanel.drawDebugLines = self.drawDebugLines;
+
+    self:onPetZoneAnimalsIsRunning(self.livestockZone);
 end
 
 function LivestockZonesInfo:createDetailsPanel()
@@ -204,7 +201,7 @@ function LivestockZonesInfo:calculateLayout(preferredWidth, preferredHeight)
         width = math.max(width, self.controlsPanel:getWidth());
     end
 
-    if self.modifyPanel then
+    if self.overlayPanel then
         local titleX = 0;
         local titleY = 0;
         local iconX = 0;
@@ -214,7 +211,7 @@ function LivestockZonesInfo:calculateLayout(preferredWidth, preferredHeight)
             titleX, titleY, iconX, iconY = self.titlePanel:getCoords();
         end
 
-        self.modifyPanel:calculateLayout(width, controlsPanelHeight, titleX, titleY, iconX, iconY);
+        self.overlayPanel:calculateLayout(width, controlsPanelHeight, titleX, titleY, iconX, iconY);
     end
 
     local detailsPanelWidth = 0;
@@ -262,6 +259,8 @@ function LivestockZonesInfo:close()
 
     local events = self.zoneController:getEvents();
     events.onActiveLivestockZoneChanged:removeListener(self.onActiveLivestockZoneChangedListener);
+    events.onPetAnimalAction:removeListener(self.onPetAnimalListener);
+    events.onPetZoneAnimalsStop:removeListener(self.onPetAnimalsStopListener);
 
     if self.titlePanel then
         self.titlePanel:close();
@@ -272,24 +271,36 @@ function LivestockZonesInfo:close()
     end
 
     if self.controlsPanel then
-        self.modifyPanel:close();
+        self.overlayPanel:close();
     end
 
     if self.detailsPanel then
         self.detailsPanel:close();
     end
+
+    if self.overlayPanel then
+        self.overlayPanel:close();
+    end
+end
+
+-- events
+
+function LivestockZonesInfo:onActiveLivestockZoneChanged(livestockZone)
+    self.livestockZone = livestockZone;
+    self:createDynamicChildren();
+    self:onPetZoneAnimalsIsRunning(livestockZone);
 end
 
 function LivestockZonesInfo:onClickRenameZone()
     self.titlePanel:setVisible(false);
     self.controlsPanel:setVisible(false);
-    self.modifyPanel:activate(self.modifyPanel.modifyModeName);
+    self.overlayPanel:activate(self.overlayPanel.modeNameChange);
 end
 
 function LivestockZonesInfo:onActionRenameZone(isChanged, newZoneName)
     self.titlePanel:setVisible(true);
     self.controlsPanel:setVisible(true);
-    self.modifyPanel:deactivate();
+    self.overlayPanel:deactivate();
 
     if not isChanged or not newZoneName then
         return;
@@ -305,13 +316,13 @@ end
 function LivestockZonesInfo:onClickChangeZoneIcon()
     self.titlePanel:setVisible(false);
     self.controlsPanel:setVisible(false);
-    self.modifyPanel:activate(self.modifyPanel.modifyModeIcon);
+    self.overlayPanel:activate(self.overlayPanel.modeIconChange);
 end
 
 function LivestockZonesInfo:onActionChangeZoneIcon(isChanged, newZoneIcon)
     self.titlePanel:setVisible(true);
     self.controlsPanel:setVisible(true);
-    self.modifyPanel:deactivate();
+    self.overlayPanel:deactivate();
 
     if not isChanged or not newZoneIcon then
         return;
@@ -327,19 +338,75 @@ end
 function LivestockZonesInfo:onClickRemoveZone()
     self.titlePanel:setVisible(false);
     self.controlsPanel:setVisible(false);
-    self.modifyPanel:activate(self.modifyPanel.modifyRemove);
+    self.overlayPanel:activate(self.overlayPanel.modeRemove);
 end
 
+--- @param isConfirmed boolean
 function LivestockZonesInfo:onActionRemoveZone(isConfirmed)
     self.titlePanel:setVisible(true);
     self.controlsPanel:setVisible(true);
-    self.modifyPanel:deactivate();
+    self.overlayPanel:deactivate();
 
     if not isConfirmed then
         return;
     end
 
     self.zoneController:removeZone(self.livestockZone);
+end
+
+--- @param livestockZone LivestockZone
+function LivestockZonesInfo:onPetZoneAnimalsIsRunning(livestockZone)
+    local petAnimals = self.zoneController:getPetZoneAnimals();
+
+    if not petAnimals:isRunningInZone(livestockZone) then
+        return;
+    end
+
+    self.titlePanel:setVisible(false);
+    self.controlsPanel:setVisible(false);
+    self.overlayPanel:setPetAnimal(petAnimals:getCurrentAnimal());
+    self.overlayPanel:activate(self.overlayPanel.modePetAnimals);
+end
+
+--- @param livestockZone LivestockZone
+function LivestockZonesInfo:onClickPetZoneAnimals(livestockZone)
+    if self.zoneController:startPetZoneAnimals(livestockZone) then
+        self.titlePanel:setVisible(false);
+        self.controlsPanel:setVisible(false);
+        self.overlayPanel:activate(self.overlayPanel.modePetAnimals);
+    end
+end
+
+--- @param livestockZone LivestockZone
+--- @param animal LivestockZonesAnimal
+function LivestockZonesInfo:onPetAnimal(livestockZone, animal)
+    if not self.livestockZone then
+        return;
+    end
+
+    if livestockZone:getId() == self.livestockZone:getId() then
+        self.overlayPanel:setPetAnimal(animal);
+        self.animalsPanel:setAnimalSelected(animal);
+    end
+end
+
+function LivestockZonesInfo:onActionCancelPetAnimals()
+    self.zoneController:stopPetZoneAnimals();
+end
+
+--- @param livestockZone LivestockZone
+function LivestockZonesInfo:onPetAnimalsStop(livestockZone)
+    if not self.livestockZone then
+        return;
+    end
+
+    if livestockZone:getId() ~= self.livestockZone:getId() then
+        return;
+    end
+
+    self.overlayPanel:deactivate();
+    self.titlePanel:setVisible(true);
+    self.controlsPanel:setVisible(true);
 end
 
 --- @param x number
@@ -375,6 +442,16 @@ function LivestockZonesInfo:new(x, y, width, height, player, zoneController)
     o.onActiveLivestockZoneChangedListener = function(livestockZone)
         o:onActiveLivestockZoneChanged(livestockZone);
     end
+
+    o.onPetAnimalListener = function(livestockZone, animal)
+        o:onPetAnimal(livestockZone, animal);
+    end
+
+    o.onPetAnimalsStopListener = function(livestockZone)
+        o:onPetAnimalsStop(livestockZone);
+    end
+
+    o.petZoneAnimals = nil;
 
     return o;
 end

@@ -1,4 +1,8 @@
 IGUI_EN = {
+    IGUI_WeeezLivestockZonesExpanded_Title = "Livestock zones expanded",
+    IGUI_Stop_Pet_Zone_Animals = "Stop Pet Animals",
+    IGUI_Stop_Pet_Zone_Animals_Tooltip = "Hotkey to stop "Pet animals" in a zone action.",
+
     IGUI_animal_baby = "Baby",
 
     IGUI_AnimalGroup_all = "All",
@@ -22,5 +26,6 @@ IGUI_EN = {
     IGUI_DesignationZone_Add_New_Zone = "Add zone",
     IGUI_DesignationZone_Dung = "Dung:"
     IGUI_DesignationZone_Feathers = "Feathers:"
-    IGUI_DesignationZone_Pet_Animals = "Pet animals:"
+    IGUI_DesignationZone_Pet_Animals = "Pet animals"
+    IGUI_DesignationZone_Pet_Animal = "Pet %1"
 }

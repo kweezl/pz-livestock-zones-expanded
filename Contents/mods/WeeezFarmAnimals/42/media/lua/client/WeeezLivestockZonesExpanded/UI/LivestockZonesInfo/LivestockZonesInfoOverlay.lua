@@ -1,27 +1,26 @@
 require("ISUI/ISPanel");
 
---- @class LivestockZonesInfoModify
+--- @class LivestockZonesInfoOverlay
 --- @field private zoneIcons LivestockZonesIcons
 --- @field private livestockZone LivestockZone
-LivestockZonesInfoModify = ISPanel:derive("LivestockZonesInfoModify");
+LivestockZonesInfoOverlay = ISPanel:derive("LivestockZonesInfoOverlay");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
 local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.NewMedium)
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
 local ICON_SIZE = 48 * math.max(1, FONT_SCALE);
-local UI_BORDER_SPACING = 10
 
-LivestockZonesInfoModify.modifyModeName = 0;
-LivestockZonesInfoModify.modifyModeIcon = 1;
+LivestockZonesInfoOverlay.modeNameChange = 0;
+LivestockZonesInfoOverlay.modeIconChange = 1;
+LivestockZonesInfoOverlay.modePetAnimals = 2;
 --- reserved
-LivestockZonesInfoModify.modifyRemove = 100;
+LivestockZonesInfoOverlay.modeRemove = 100;
 
-function LivestockZonesInfoModify:initialise()
+function LivestockZonesInfoOverlay:initialise()
     ISPanel.initialise(self);
 end
 
-function LivestockZonesInfoModify:createChildren()
+function LivestockZonesInfoOverlay:createChildren()
     ISPanel.createChildren(self);
 
     local title = self.livestockZone:getName();
@@ -40,10 +39,7 @@ function LivestockZonesInfoModify:createChildren()
     self.entryBox.font = UIFont.NewMedium;
     self.entryBox:initialise();
     self.entryBox:instantiate();
-    --self.entryBox:setClearButton(true);
     self.entryBox.javaObject:setCentreVertically(true);
-    --self.entryBox.javaObject:SetText(self.zoneController:getFilterTextDefault());
-    --self.filterZoneName:focus();
     self:addChild(self.entryBox);
     self.entryBox:setVisible(false);
 
@@ -110,37 +106,68 @@ function LivestockZonesInfoModify:createChildren()
     self.removeLabel:instantiate();
     self.removeLabel:setHeightToName(0);
     self:addChild(self.removeLabel);
+
+    self.petAnimalsLabel = ISXuiSkin.build(
+        self.xuiSkin,
+        "S_NeedsAStyle",
+        ISLabel,
+        0,
+        0,
+        FONT_HGT_MED,
+        "",
+        1,
+        1,
+        1,
+        1,
+        UIFont.NewMedium,
+        true
+    );
+    self.petAnimalsLabel:initialise();
+    self.petAnimalsLabel:instantiate();
+    self.petAnimalsLabel:setHeightToName(0);
+    self:addChild(self.petAnimalsLabel);
 end
 
-function LivestockZonesInfoModify:calculateLayout(preferredWidth, preferredHeight, titleX, titleY, iconX, iconY)
+function LivestockZonesInfoOverlay:calculateLayout(preferredWidth, preferredHeight, titleX, titleY, iconX, iconY)
     local width = math.max(self.minimumWidth, preferredWidth or 0);
     local height = math.max(self.minimumHeight, preferredHeight or 0);
     local middleX = width / 2;
 
     if self.entryBox then
-        self.entryBox:setX(titleX);
-        self.entryBox:setY(titleY - 2);
+        self.entryBox:setX(titleX - 2);
+        self.entryBox:setY(titleY - 5);
     end
 
+    local btnConfirmVisible = false;
     if self.btnConfirm then
         local btnConfirmX = middleX - self.btnConfirm:getWidth() - 15;
         self.btnConfirm:setX(btnConfirmX);
         self.btnConfirm:setY(height - self.btnConfirm:getHeight() - 5);
+        btnConfirmVisible = self.btnConfirm:getIsVisible();
     end
 
     if self.btnCancel then
-        local btnCancelX = middleX + 15;
+        local btnCancelX;
+
+        if btnConfirmVisible then
+            btnCancelX = middleX + 15;
+        else
+            btnCancelX = middleX - self.btnCancel:getWidth() / 2;
+        end
+
         self.btnCancel:setX(btnCancelX);
         self.btnCancel:setY(height - self.btnCancel:getHeight() - 5);
     end
 
+    local iconPad = 0;
     if self.icon then
         self.icon:setX(iconX);
         self.icon:setY(iconY);
+        iconPad = iconX + self.icon:getWidth() + 30;
     end
 
     if self.iconList then
-        self.iconList:setX(iconX + self.icon:getWidth() + 30);
+        self.iconList:setX(iconPad);
         self.iconList:setY(5);
         self.iconList:setWidth(300);
         self.iconList:setHeight(self.iconList.itemheight * 2 + 10);
@@ -149,32 +176,38 @@ function LivestockZonesInfoModify:calculateLayout(preferredWidth, preferredHeigh
         self.iconList.vscroll:setX(self.iconList:getWidth() - self.iconList.vscroll:getWidth());
     end
 
-    --if self.removeLabel then
+    if self.removeLabel then
         self.removeLabel:setX(30);
         self.removeLabel:setY(titleY);
-    --end
+    end
+
+    if self.petAnimalsLabel then
+        self.petAnimalsLabel.originalX = titleX;
+        self.petAnimalsLabel:setX(titleX);
+        self.petAnimalsLabel:setY(titleY);
+    end
 
     self:setWidth(width);
     self:setHeight(height);
 end
 
-function LivestockZonesInfoModify:onResize()
+function LivestockZonesInfoOverlay:onResize()
     ISUIElement.onResize(self)
 end
 
-function LivestockZonesInfoModify:prerender()
+function LivestockZonesInfoOverlay:prerender()
     ISPanel.prerender(self);
 end
 
-function LivestockZonesInfoModify:render()
+function LivestockZonesInfoOverlay:render()
     ISPanel.render(self);
 end
 
-function LivestockZonesInfoModify:update()
+function LivestockZonesInfoOverlay:update()
     ISPanel.update(self);
 end
 
-function LivestockZonesInfoModify:doDrawIconItem(list, y, item, alt)
+function LivestockZonesInfoOverlay:doDrawIconItem(list, y, item)
     local yScroll = list:getYScroll();
     local height = list:getHeight();
     local itemHeight = list.itemheight;
@@ -187,7 +220,6 @@ function LivestockZonesInfoModify:doDrawIconItem(list, y, item, alt)
     local width = list:getWidth()
     local iconSize = FONT_HGT_SMALL + 5
     local iconPadding = 5;
-    local alpha = 0.9;
     local data = item.item;
 
     -- Draw main background
@@ -211,20 +243,20 @@ function LivestockZonesInfoModify:doDrawIconItem(list, y, item, alt)
 end
 
 --- @param livestockZone LivestockZone
-function LivestockZonesInfoModify:setLivestockZone(livestockZone)
+function LivestockZonesInfoOverlay:setLivestockZone(livestockZone)
     self.entryBox:setText(livestockZone:getName());
 end
 
-function LivestockZonesInfoModify:onClickConfirm()
+function LivestockZonesInfoOverlay:onClickConfirm()
     -- todo: clean
-    if self.modifyMode == self.modifyRemove then
+    if self.overlayMode == self.modeRemove then
         if self.onClickRemoveTarget and self.onClickRemoveFn then
             self.onClickRemoveFn(self.onClickRemoveTarget, true)
         end
         return;
     end
 
-    if self.modifyMode == self.modifyModeIcon then
+    if self.overlayMode == self.modeIconChange then
         if self.onClickChangeIconTarget and self.onClickChangeIconFn then
             local icon = self.iconList.items[self.iconList.selected].item.icon;
             self.onClickChangeIconFn(self.onClickChangeIconTarget, true, icon)
@@ -237,57 +269,76 @@ function LivestockZonesInfoModify:onClickConfirm()
     end
 end
 
-function LivestockZonesInfoModify:onClickCancel()
+function LivestockZonesInfoOverlay:onClickCancel()
     -- todo: clean
-    if self.modifyMode == self.modifyRemove then
+    if self.overlayMode == self.modeRemove then
         if self.onClickRemoveTarget and self.onClickRemoveFn then
             self.onClickRemoveFn(self.onClickRemoveTarget, false)
         end
         return;
     end
 
-    if self.modifyMode == self.modifyModeIcon then
+    if self.overlayMode == self.modeIconChange then
         if self.onClickChangeIconTarget and self.onClickChangeIconFn then
             self.onClickChangeIconFn(self.onClickChangeIconTarget, false, nil)
         end
         return;
     end
 
-    if self.onClickRenameTarget and self.onClickRenameFn then
-        self.onClickRenameFn(self.onClickRenameTarget, false, nil)
+    if self.overlayMode == self.modeNameChange then
+        if self.onClickRenameTarget and self.onClickRenameFn then
+            self.onClickRenameFn(self.onClickRenameTarget, false, nil)
+        end
+    end
+
+    if self.overlayMode == self.modePetAnimals then
+        if self.onClickRenameTarget and self.onClickRenameFn then
+            self.onClickCancelPetAnimalsFn(self.onClickCancelPetAnimalsTarget)
+        end
     end
 end
 
 --- @param target table
 --- @param fn function
-function LivestockZonesInfoModify:setOnRename(target, fn)
+function LivestockZonesInfoOverlay:setOnRename(target, fn)
     self.onClickRenameTarget = target;
     self.onClickRenameFn = fn;
 end
 
 --- @param target table
 --- @param fn function
-function LivestockZonesInfoModify:setOnChangeIcon(target, fn)
+function LivestockZonesInfoOverlay:setOnChangeIcon(target, fn)
     self.onClickChangeIconTarget = target;
     self.onClickChangeIconFn = fn;
 end
 
 --- @param target table
 --- @param fn function
-function LivestockZonesInfoModify:setOnRemove(target, fn)
+function LivestockZonesInfoOverlay:setOnRemove(target, fn)
     self.onClickRemoveTarget = target;
     self.onClickRemoveFn = fn;
 end
 
-function LivestockZonesInfoModify:activate(mode)
-    self.modifyMode = mode;
+--- @param target table
+--- @param fn function
+function LivestockZonesInfoOverlay:setOnCancelPetAnimals(target, fn)
+    self.onClickCancelPetAnimalsTarget = target;
+    self.onClickCancelPetAnimalsFn = fn;
+end
+
+function LivestockZonesInfoOverlay:activate(mode)
+    self.overlayMode = mode;
 
     -- todo: clean
-    if mode == self.modifyRemove then
+    if mode == self.modeRemove then
         self.icon:setVisible(false);
         self.iconList:setVisible(false);
         self.entryBox:setVisible(false);
+        self.petAnimalsLabel:setVisible(false);
 
+        self.btnConfirm:setVisible(true);
+        self.btnCancel:setVisible(true);
+        self.btnCancel:setX(self:getWidth() / 2 + 15);
         local removeLabelText = getTextManager():WrapText(
             self.removeLabel.font,
             getText("IGUI_Designation_RemoveConfirm", self.livestockZone:getName()),
@@ -300,10 +351,14 @@ function LivestockZonesInfoModify:activate(mode)
         return;
     end
 
-    if mode == self.modifyModeIcon then
+    if mode == self.modeIconChange then
         self.entryBox:setVisible(false);
         self.removeLabel:setVisible(false);
+        self.petAnimalsLabel:setVisible(false);
 
+        self.btnConfirm:setVisible(true);
+        self.btnCancel:setVisible(true);
+        self.btnCancel:setX(self:getWidth() / 2 + 15);
         self.icon.texture = self.livestockZone:getIconTexture();
         self.icon:setVisible(true);
         self.iconList:setVisible(true);
@@ -313,24 +368,46 @@ function LivestockZonesInfoModify:activate(mode)
         return;
     end
 
-    self.icon:setVisible(false);
-    self.iconList:setVisible(false);
-    self.removeLabel:setVisible(false);
+    if mode == self.modeNameChange then
+        self.icon:setVisible(false);
+        self.iconList:setVisible(false);
+        self.removeLabel:setVisible(false);
+        self.petAnimalsLabel:setVisible(false);
 
-    self.entryBox:setText(self.livestockZone:getName());
-    self.entryBox:setVisible(true);
-    self:setVisible(true);
+        self.btnConfirm:setVisible(true);
+        self.btnCancel:setVisible(true);
+        self.btnCancel:setX(self:getWidth() / 2 + 15);
+        self.entryBox:setText(self.livestockZone:getName());
+        self.entryBox:setVisible(true);
+        self:setVisible(true);
+
+        return;
+    end
+
+    if mode == self.modePetAnimals then
+        self.iconList:setVisible(false);
+        self.removeLabel:setVisible(false);
+        self.entryBox:setVisible(false);
+        self.btnConfirm:setVisible(false);
+
+        self.btnCancel:setVisible(true);
+        self.btnCancel:setX(self:getWidth() / 2 - self.btnCancel:getWidth() / 2);
+        self.petAnimalsLabel:setVisible(true);
+        self.icon:setVisible(true);
+        self:setVisible(true);
+    end
 end
 
-function LivestockZonesInfoModify:deactivate()
+function LivestockZonesInfoOverlay:deactivate()
     self:setVisible(false);
     self.entryBox:setVisible(false);
     self.icon:setVisible(false);
     self.iconList:setVisible(false);
+    self.petAnimalsLabel:setVisible(false);
     self.iconList:clear();
 end
 
-function LivestockZonesInfoModify:populateIconList()
+function LivestockZonesInfoOverlay:populateIconList()
     local icons = self.zonesIcons:getAll();
 
     for i = 0, icons:size() - 1 do
@@ -339,13 +416,19 @@ function LivestockZonesInfoModify:populateIconList()
     end
 end
 
+--- @param animal livestockZonesAnimal
+function LivestockZonesInfoOverlay:setPetAnimal(animal)
+    self.petAnimalsLabel:setName(getText("IGUI_DesignationZone_Pet_Animal", animal:getName()));
+    self.icon.texture = animal:getTexture();
+end
+
 --- @param x number
 --- @param y number
 --- @param width number
 --- @param height number
 --- @param zonesIcons LivestockZonesIcons
 --- @param livestockZone LivestockZone
-function LivestockZonesInfoModify:new(x, y, width, height, zonesIcons, livestockZone)
+function LivestockZonesInfoOverlay:new(x, y, width, height, zonesIcons, livestockZone)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -371,7 +454,10 @@ function LivestockZonesInfoModify:new(x, y, width, height, zonesIcons, livestock
     o.onClickRemoveTarget = nil;
     o.onClickRemoveFn = nil;
 
-    o.modifyMode = o.modifyModeName;
+    o.onClickCancelPetAnimalsTarget = nil;
+    o.onClickCancelPetAnimalsFn = nil;
+
+    o.overlayMode = o.modeNameChange;
 
     return o
 end
