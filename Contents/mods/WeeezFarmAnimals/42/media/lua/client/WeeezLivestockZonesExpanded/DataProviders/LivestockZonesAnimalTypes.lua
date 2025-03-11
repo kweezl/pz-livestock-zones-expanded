@@ -4,65 +4,73 @@ local livestockAnimalGroup = require("WeeezLivestockZonesExpanded/Entity/Livesto
 ---@module livestockZonesAnimalTypes
 local livestockZonesAnimalTypes = {};
 
+local groups = {};
+local types = {};
+
 --- @class LivestockZonesAnimalTypes
 --- @field private groups table<string, LivestockAnimalGroup> | nil
 --- @field private types table<string, LivestockAnimalGroup> | nil
 local LivestockZonesAnimalTypes = {};
-
-function LivestockZonesAnimalTypes:init()
-    local animals = AnimalDefinitions.animals;
-    self.groups = {};
-    self.types = {};
-
-    for animalType, definition in pairs(animals) do
-        local groupType = definition.group;
-
-        if not self.groups[groupType] then
-            local groupName = getText("IGUI_AnimalGroup_" .. groupType);
-            self.groups[groupType] = livestockAnimalGroup.new(groupName, groupType, false);
-        end
-
-        local group = self.groups[groupType];
-        self.types[animalType] = group;
-        group:addAnimalType(animalType);
-    end
-
-    table.sort(self.groups, function(a, b)  return a:getName():upper() < b:getName():upper() end);
-end
 
 --- @return LivestockAnimalGroup
 function LivestockZonesAnimalTypes:getDefaultGroup()
     return self.defaultGroup
 end
 
---- @param reset boolean
 --- @return table<string, LivestockAnimalGroup>
-function LivestockZonesAnimalTypes:getGroups(reset)
-    if (reset == true or self.groups == nil) then
-        self:init();
-    end
-
-    return self.groups;
+function LivestockZonesAnimalTypes:getGroups()
+    return groups;
 end
 
---- @param reset boolean
 --- @return table<string, LivestockAnimalGroup>
-function LivestockZonesAnimalTypes:getTypes(reset)
-    if (reset == true or self.types == nil) then
-        self:init();
-    end
-
-    return self.types;
+function LivestockZonesAnimalTypes:getTypes()
+    return types;
 end
 
 --- @param animalType string
 --- @param groupType string
 --- @return boolean
 function LivestockZonesAnimalTypes:typeOf(animalType, groupType)
-    local types = self:getTypes(false);
     local group = types[animalType];
 
     return group and group:getType() == groupType or false;
+end
+
+--- @param animalType string
+--- @return table | nil
+function LivestockZonesAnimalTypes:getAnimalDefinitionNextStage(animalType)
+    local group = types[animalType];
+
+    if not group then
+        return nil;
+    end
+
+    local animaGroupStagesDef = AnimalDefinitions.stages[group:getType()];
+
+    if not animaGroupStagesDef then
+        return nil;
+    end
+
+    return animaGroupStagesDef.stages[animalType];
+end
+
+function livestockZonesAnimalTypes.init()
+    local animals = AnimalDefinitions.animals;
+
+    for animalType, definition in pairs(animals) do
+        local groupType = definition.group;
+
+        if not groups[groupType] then
+            local groupName = getText("IGUI_AnimalGroup_" .. groupType);
+            groups[groupType] = livestockAnimalGroup.new(groupName, groupType, false);
+        end
+
+        local group = groups[groupType];
+        types[animalType] = group;
+        group:addAnimalType(animalType);
+    end
+
+    table.sort(groups, function(a, b)  return a:getName():upper() < b:getName():upper() end);
 end
 
 --- @return LivestockZonesAnimalTypes
@@ -70,8 +78,6 @@ function livestockZonesAnimalTypes.new()
     local self = {};
     setmetatable(self, { __index = LivestockZonesAnimalTypes });
 
-    self.groups = nil;
-    self.types = nil;
     self.defaultGroup = livestockAnimalGroup.new(
         config.filterAllAnimalGroupText,
         config.filterAllAnimalGroupDefault,

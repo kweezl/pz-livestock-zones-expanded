@@ -1,4 +1,7 @@
-local stat = require("WeeezLivestockZonesExpanded/Enums/LivestockZoneStat").stat
+local stat = require("WeeezLivestockZonesExpanded/Enums/LivestockZoneStat").stat;
+local animalMoodleType = require("WeeezLivestockZonesExpanded/Enums/AnimalMoodleType");
+local animalGrowStageType = require("WeeezLivestockZonesExpanded/Enums/AnimalGrowStageType");
+local animalGenderType = require("WeeezLivestockZonesExpanded/Enums/AnimalGenderType");
 
 --- @module config
 local config = {
@@ -81,6 +84,76 @@ local config = {
     },
 
     iconTypesDefault = "media/inventory/Question_On.png",
+
+    moodleColor = {
+        neutral = ColorInfo.new(1.0, 1.0, 1.0, 1.0),
+        geriatric = ColorInfo.new(1.0, 0.53, 0.21, 1.0),
+        negative = {
+            min = ColorInfo.new(255, 0.83, 0.83, 1.0),
+            max = getCore():getBadHighlitedColor(),
+        },
+        positive = {
+            min = ColorInfo.new(0.83, 1.0, 0.83, 1.0),
+            max = getCore():getGoodHighlitedColor(),
+        },
+    },
+
+    moodle = {
+        -- stats
+        [animalMoodleType.health] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_health.png"),
+        },
+        [animalMoodleType.hungry] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_hungry.png"),
+        },
+        [animalMoodleType.thirsty] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_thirsty.png"),
+        },
+        [animalMoodleType.anxiety] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_anxiety.png"),
+        },
+
+        -- resources
+        [animalMoodleType.shear] = {
+            texture = getTexture("media/ui/animal_moodle_basic_resource_shear.png"),
+        },
+        [animalMoodleType.milk] = {
+            texture = getTexture("media/ui/animal_moodle_basic_resource_milk.png"),
+        },
+
+        -- grow stage
+        [animalGrowStageType.baby] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_baby.png"),
+        },
+        [animalGrowStageType.juvenile] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_juvenile.png"),
+        },
+        [animalGrowStageType.adult] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_adult.png"),
+        },
+        [animalGrowStageType.geriatric] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_geriatric.png"),
+        },
+
+        -- gender
+        [animalGenderType.female] = {
+            texture = getTexture("media/ui/animal_moodle_basic_gender_female.png"),
+        },
+        [animalGenderType.male] = {
+            texture = getTexture("media/ui/animal_moodle_basic_gender_male.png"),
+        },
+    },
+
+    moodleOrder = {
+        animalMoodleType.gender,
+        animalMoodleType.growStage,
+        animalMoodleType.health,
+        animalMoodleType.hungry,
+        animalMoodleType.thirsty,
+        animalMoodleType.anxiety,
+        animalMoodleType.milk,
+        animalMoodleType.shear,
+    },
 };
 
 return config;

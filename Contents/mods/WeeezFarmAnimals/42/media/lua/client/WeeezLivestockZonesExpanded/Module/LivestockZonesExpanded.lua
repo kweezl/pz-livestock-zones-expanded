@@ -6,6 +6,8 @@ local livestockZonesAnimals = require("WeeezLivestockZonesExpanded/DataProviders
 local livestockZonesIcons = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesIcons");
 local livestockZonesStatsProvider = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesStatsProvider");
 local livestockZonesAnimalTypes = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalTypes");
+local livestockZonesAnimalMoodle = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalMoodle");
+local livestockZonesAnimalGrowStage = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalGrowStage");
 local livestockZonesController = require("WeeezLivestockZonesExpanded/Controllers/LivestockZonesController");
 local petZoneAnimals = require("WeeezLivestockZonesExpanded/TimedActions/PetZoneAnimals");
 
@@ -25,6 +27,10 @@ local zonesController;
 local zonesStorage;
 --- @type PetZoneAnimals
 local petAnimals;
+--- @type LivestockZonesAnimalMoodle
+local animalMoodle;
+--- @type LivestockZonesAnimalGrowStage
+local growStage;
 
 ---@module livestockZonesExpanded
 local livestockZonesExpanded = {};
@@ -101,10 +107,34 @@ function livestockZonesExpanded.getPetZoneAnimals(player)
     assert(instanceof(player, "IsoPlayer"), "Player object required");
 
     if not petAnimals then
-        petAnimals = petZoneAnimals.new(livestockZonesExpanded.getAnimalsProvider(player));
+        petAnimals = petZoneAnimals.new(
+            livestockZonesExpanded.getAnimalsProvider(player)
+        );
     end
 
     return petAnimals;
+end
+
+--- @return LivestockZonesAnimalMoodle
+function livestockZonesExpanded.getAnimalMoodle()
+    if not animalMoodle then
+        animalMoodle = livestockZonesAnimalMoodle.new(
+            livestockZonesExpanded.getGrowStage()
+        );
+    end
+
+    return animalMoodle;
+end
+
+--- @return LivestockZonesAnimalGrowStage
+function livestockZonesExpanded.getGrowStage()
+    if not growStage then
+        growStage = livestockZonesAnimalGrowStage.new(
+            livestockZonesExpanded.getAnimalTypes()
+        );
+    end
+
+    return growStage;
 end
 
 --- @param player IsoPlayer
@@ -129,5 +159,11 @@ function livestockZonesExpanded.getZonesController(player)
 
     return zonesController;
 end
+
+local function onInitWorld()
+    livestockZonesAnimalTypes.init();
+end
+
+Events.OnInitWorld.Add(onInitWorld)
 
 return livestockZonesExpanded;

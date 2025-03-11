@@ -1,5 +1,8 @@
 require("ISUI/ISPanel");
 
+local moodleOrder = require("WeeezLivestockZonesExpanded/Defaults/Config").moodleOrder;
+local animalMoodle = require("WeeezLivestockZonesExpanded/Module/LivestockZonesExpanded").getAnimalMoodle();
+
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local MIN_LIST_BOX_WIDTH = 125 * FONT_SCALE;
@@ -16,7 +19,7 @@ LivestockZonesInfoAnimals = ISPanel:derive("LivestockZonesInfoAnimals");
 function LivestockZonesInfoAnimals:initialise()
     ISPanel.initialise(self);
 
-    log(DebugType.Zone, "Creating LivestockZonesInfoAnimals")
+    log(DebugType.Zone, "Creating LivestockZonesInfoAnimals");
 end
 
 function LivestockZonesInfoAnimals:createChildren()
@@ -70,7 +73,10 @@ function LivestockZonesInfoAnimals:populateAnimalList()
     for i = 0, animals:size() - 1 do
         --- @type LivestockZonesAnimal
         local animal = animals:get(i);
-        self.animalList:addItem(animal:getName(), animal);
+        self.animalList:addItem(animal:getName(), {
+            animal = animal,
+            moodleList = nil,
+        });
     end
 end
 
@@ -90,8 +96,9 @@ function LivestockZonesInfoAnimals:drawAnimalItem(list, y, item)
     local width = list:getWidth();
     local iconPadding = 10;
     local iconSize = 32;
+    local itemData = item.item;
     --- @type LivestockZonesAnimal
-    local animal = item.item;
+    local animal = itemData.animal;
 
     list:drawRectBorder(0, (y), list:getWidth(), item.height, 0.5, list.borderColor.r, list.borderColor.g, list.borderColor.b);
     local itemPadY = 10;
@@ -103,6 +110,7 @@ function LivestockZonesInfoAnimals:drawAnimalItem(list, y, item)
     -- scroll bar width 17
     local iconBorderX = width - itemPadY - 20 - 17;
     local iconBorderY = y + itemPadY;
+    local titleX = iconSize + iconPadding * 2;
 
     -- animal info icon
     if animal:isOutsideHutch() then
@@ -120,6 +128,29 @@ function LivestockZonesInfoAnimals:drawAnimalItem(list, y, item)
     -- animal name
     list:drawText(animal:getName(), iconSize + iconPadding * 2, (y) + itemPadY, 0.9, 0.9, 0.9, 0.9, list.font);
 
+    local isoAnimal = animal:getIsoAnimal();
+    local moodleTextureWH = 20;
+    local moodleOffsetY =  y + 32;
+    local moodleOffsetX = titleX;
+    local moodleList = animalMoodle:getMoodleList(isoAnimal, itemData.moodleList);
+    local moodleListItems = moodleList.list;
+
+    -- animal moodle
+    if not itemData.moodleList then
+        itemData.moodleList = moodleList;
+    end
+
+    for _, moodleType in pairs(moodleOrder) do
+        local moodle = moodleListItems[moodleType];
+
+        if moodle then
+            local color = moodle.color;
+            list:drawRectBorder(moodleOffsetX, moodleOffsetY, moodleTextureWH, moodleTextureWH, color:getA(), color:getR(), color:getG(), color:getB());
+            list:drawTextureScaled(moodle.texture, moodleOffsetX, moodleOffsetY, moodleTextureWH, moodleTextureWH, color:getA(), color:getR(), color:getG(), color:getB());
+            moodleOffsetX = moodleOffsetX + moodleTextureWH + 5;
+        end
+    end
+
     return y + item.height;
 end
 
@@ -129,22 +160,25 @@ function LivestockZonesInfoAnimals:onMouseDownAnimalListItem(item)
         return;
     end
 
-    local animal = item:getIsoAnimal();
+    local animal = item.animal;
+    local isoAnimal = animal:getIsoAnimal();
     -- icon width with border 20
     -- icon pad right 10 + 17 scrollbar
     local width = self:getWidth() - 47;
     --- icon height with border 20
     --- icon pad top 10
     local height = 10 + self.animalList.itemheight * (self.animalList.selected - 1);
+    local inputX = self.animalListItemX;
+    local inputY = self.animalListItemY;
 
-    local hitX = width <= self.animalListItemX and width + 20 >= self.animalListItemX;
-    local hitY = height <= self.animalListItemY and height + 20 >= self.animalListItemY;
+    local hitX = width <= inputX and width + 20 >= inputX;
+    local hitY = height <= inputY and height + 20 >= inputY;
 
     if hitX and hitY then
         -- open info window
         -- todo: create better info info window and trace duplicates
-        if luautils.walkAdj(self.player, animal:getSquare()) then
-            ISTimedActionQueue.add(ISOpenAnimalInfo:new(self.player, animal, self))
+        if luautils.walkAdj(self.player, isoAnimal:getSquare()) then
+            ISTimedActionQueue.add(ISOpenAnimalInfo:new(self.player, isoAnimal, self))
         end
 
         return;
@@ -152,12 +186,28 @@ function LivestockZonesInfoAnimals:onMouseDownAnimalListItem(item)
 
     -- hit pet icon
     width = width - 25;
-    hitX = width <= self.animalListItemX and width + 20 >= self.animalListItemX;
+    hitX = width <= inputX and width + 20 >= inputX;
 
     if hitX and hitY then
         -- begin pet timed action
-        AnimalContextMenu.onPetAnimal(animal, self.player);
+        AnimalContextMenu.onPetAnimal(isoAnimal, self.player);
     end
+
+    -- test moodle tooltip
+    --local moodles = item.moodle;
+    --local moodleTotal = #moodles;
+    --if moodleTotal == 0 then
+    --    return;
+    --end
+    --
+    --local moodleOffsetX = 0;
+    --for i = 1, moodleTotal do
+    --    local moodle = moodles[i];
+    --
+    --    if moodle.x < inputX  then
+    --
+    --    end
+    --end
 end
 
 function LivestockZonesInfoAnimals:calculateLayout(preferredWidth, preferredHeight)

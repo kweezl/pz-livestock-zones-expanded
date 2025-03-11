@@ -1,4 +1,4 @@
-require("ISBaseObject")
+require("ISBaseObject");
 
 local options = require("WeeezLivestockZonesExpanded/Options/LivestockZonesModOptions");
 local events = require("WeeezLivestockZonesExpanded/Module/LivestockZonesEvents");
