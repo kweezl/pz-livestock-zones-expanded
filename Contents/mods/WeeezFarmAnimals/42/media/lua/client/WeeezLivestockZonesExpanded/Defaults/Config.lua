@@ -1,4 +1,7 @@
-local stat = require("WeeezLivestockZonesExpanded/Enums/LivestockZoneStat").stat
+local stat = require("WeeezLivestockZonesExpanded/Enums/LivestockZoneStat").stat;
+local animalMoodleType = require("WeeezLivestockZonesExpanded/Enums/AnimalMoodleType");
+local animalGrowStageType = require("WeeezLivestockZonesExpanded/Enums/AnimalGrowStageType");
+local animalGenderType = require("WeeezLivestockZonesExpanded/Enums/AnimalGenderType");
 
 --- @module config
 local config = {
@@ -81,6 +84,97 @@ local config = {
     },
 
     iconTypesDefault = "media/inventory/Question_On.png",
+
+    moodleColor = {
+        neutral = ColorInfo.new(1.0, 1.0, 1.0, 1.0),
+        geriatric = ColorInfo.new(1.0, 0.53, 0.21, 1.0),
+        negative = {
+            min = ColorInfo.new(1.0, 0.88, 0.19, 1.0),
+            max = getCore():getBadHighlitedColor(),
+        },
+        positive = {
+            min = ColorInfo.new(0.83, 1.0, 0.83, 1.0),
+            max = getCore():getGoodHighlitedColor(),
+        },
+    },
+
+    moodle = {
+        -- stats
+        [animalMoodleType.health] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_health.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Health_Tooltip"),
+        },
+        [animalMoodleType.hungry] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_hungry.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Hungry_Tooltip"),
+        },
+        [animalMoodleType.thirsty] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_thirsty.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Thirsty_Tooltip"),
+        },
+        [animalMoodleType.anxiety] = {
+            texture = getTexture("media/ui/animal_moodle_basic_stat_anxiety.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Anxiety_Tooltip"),
+        },
+
+        -- resources
+        [animalMoodleType.shear] = {
+            texture = getTexture("media/ui/animal_moodle_basic_resource_shear.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Shear_Tooltip"),
+        },
+        [animalMoodleType.milk] = {
+            texture = getTexture("media/ui/animal_moodle_basic_resource_milk.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Milk_Tooltip"),
+        },
+
+        -- grow stage
+        [animalGrowStageType.baby] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_baby.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Baby_Tooltip"),
+        },
+        [animalGrowStageType.juvenile] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_juvenile.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Juvenile_Tooltip"),
+        },
+        [animalGrowStageType.adult] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_adult.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Adult_Tooltip"),
+        },
+        [animalGrowStageType.geriatric] = {
+            texture = getTexture("media/ui/animal_moodle_basic_grow_stage_geriatric.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Geriatric_Tooltip"),
+        },
+
+        -- gender
+        [animalGenderType.female] = {
+            texture = getTexture("media/ui/animal_moodle_basic_gender_female.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Female_Tooltip"),
+        },
+        [animalGenderType.male] = {
+            texture = getTexture("media/ui/animal_moodle_basic_gender_male.png"),
+            tooltip = getText("IGUI_AnimalMoodle_Male_Tooltip"),
+        },
+    },
+
+    moodleOrder = {
+        animalMoodleType.gender,
+        animalMoodleType.growStage,
+        animalMoodleType.health,
+        animalMoodleType.hungry,
+        animalMoodleType.thirsty,
+        animalMoodleType.anxiety,
+        animalMoodleType.milk,
+        animalMoodleType.shear,
+    },
+
+    moodleThreshold = {
+        [animalMoodleType.health] = 0.9,
+        [animalMoodleType.hungry] = 0.3,
+        [animalMoodleType.thirsty] = 0.3,
+        [animalMoodleType.anxiety] = 20.0,
+        [animalMoodleType.shear] = 1.0,
+        [animalMoodleType.milk] = 0.1,
+    },
 };
 
 return config;
