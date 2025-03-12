@@ -47,7 +47,6 @@ function LivestockZonesAnimalMoodle:getMoodleList(isoAnimal, list)
 
     if not list then
         list = animalMoodleList.new(minutesStamp)
-        print("create animalMoodleList " .. isoAnimal:getFullName())
     end
 
     if list:isValid(minutesStamp) then
