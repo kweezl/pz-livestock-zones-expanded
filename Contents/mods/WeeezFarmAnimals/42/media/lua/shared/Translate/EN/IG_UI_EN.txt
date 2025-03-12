@@ -28,4 +28,17 @@ IGUI_EN = {
     IGUI_DesignationZone_Feathers = "Feathers:"
     IGUI_DesignationZone_Pet_Animals = "Pet animals"
     IGUI_DesignationZone_Pet_Animal = "Pet %1"
+
+    IGUI_AnimalMoodle_Health_Tooltip = "Low health",
+    IGUI_AnimalMoodle_Hungry_Tooltip = "Hungry",
+    IGUI_AnimalMoodle_Thirsty_Tooltip = "Thirsty",
+    IGUI_AnimalMoodle_Anxiety_Tooltip = "Stressed",
+    IGUI_AnimalMoodle_Shear_Tooltip = "Ready to shear",
+    IGUI_AnimalMoodle_Milk_Tooltip = "Ready to milk",
+    IGUI_AnimalMoodle_Baby_Tooltip = "Baby",
+    IGUI_AnimalMoodle_Juvenile_Tooltip = "Juvenile",
+    IGUI_AnimalMoodle_Adult_Tooltip = "Adult",
+    IGUI_AnimalMoodle_Geriatric_Tooltip = "Geriatric. Will continually lose health and die.",
+    IGUI_AnimalMoodle_Female_Tooltip = "Female",
+    IGUI_AnimalMoodle_Male_Tooltip = "Male",
 }

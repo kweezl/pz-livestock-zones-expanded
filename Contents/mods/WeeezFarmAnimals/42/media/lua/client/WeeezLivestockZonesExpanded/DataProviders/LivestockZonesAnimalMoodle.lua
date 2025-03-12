@@ -2,6 +2,7 @@ require("ISBaseObject");
 
 local config = require("WeeezLivestockZonesExpanded/Defaults/Config");
 local moodleConfig = config.moodle;
+local moodleThreshold = config.moodleThreshold;
 
 local animalMoodleType = require("WeeezLivestockZonesExpanded/Enums/AnimalMoodleType");
 local animalMoodle = require("WeeezLivestockZonesExpanded/Entity/Animal/AnimalMoodle");
@@ -30,33 +31,41 @@ local LivestockZonesAnimalMoodle = ISBaseObject:derive("LivestockZonesAnimalMood
 
 --- @param moodle string
 --- @return Texture | nil
-function LivestockZonesAnimalMoodle:getTexture(moodle)
+function LivestockZonesAnimalMoodle:getMoodleConfig(moodle)
     local moodleDef = moodleConfig[moodle];
 
-    return moodleDef and moodleDef.texture or nil;
+    return moodleDef and moodleDef or nil;
 end
 
 --- @param isoAnimal IsoAnimal
 --- @param list AnimalMoodleList | nil
 --- @return AnimalMoodleList
 function LivestockZonesAnimalMoodle:getMoodleList(isoAnimal, list)
+    -- min update interval
+    -- once per game minute
+    local minutesStamp = getGameTime():getMinutesStamp();
+
     if not list then
-        list = animalMoodleList.new(isoAnimal)
+        list = animalMoodleList.new(minutesStamp)
+        print("create animalMoodleList " .. isoAnimal:getFullName())
     end
 
-    --- @type AnimalMoodle | nil
-    local moodle;
+    if list:isValid(minutesStamp) then
+        return list;
+    end
+
     --- @type table<string, AnimalMoodle>
     local moodleList = list.list;
-    local moodleFnMap = self.moodleFnMap;
-    local minutesStamp = GameTime.getInstance():getMinutesStamp();
 
-    for moodleType, fn in pairs(moodleFnMap) do
-        moodle = moodleList[moodleType];
+    for moodleType, fn in pairs(self.moodleFnMap) do
+        --- @type AnimalMoodle | nil
+        local moodle = moodleList[moodleType];
         if not moodle or not moodle:isValid(minutesStamp) then
             moodleList[moodleType] = fn(self, isoAnimal, moodle, minutesStamp);
         end
     end
+
+    list.ttl = minutesStamp + 1;
 
     return list;
 end
@@ -65,16 +74,27 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle
 function LivestockZonesAnimalMoodle:getGenderMoodle(isoAnimal, moodle, minutesStamp)
+    -- gender could only be changed by cheat
     local gender = isoAnimal:isFemale() and animalGenderType.female or animalGenderType.male;
-    local texture = self:getTexture(gender);
-    local ttl = minutesStamp + 1000; -- changed by cheat only
+    local ttl = minutesStamp + 10000000;
+
+    if moodle and moodle.value == gender then
+        moodle.ttl = ttl;
+
+        return moodle;
+    end
+
+    local mc = self:getMoodleConfig(gender);
+    -- changed by cheat only
     local color = neutralColor;
 
     if not moodle then
-        return animalMoodle.new(animalMoodleType.gender, texture, color, ttl);
+        return animalMoodle.new(animalMoodleType.gender, gender, mc.tooltip, mc.texture, color, ttl);
     end
 
-    moodle.texture = texture;
+    moodle.value = gender;
+    moodle.tooltip = mc.tooltip;
+    moodle.texture = mc.texture;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -85,10 +105,24 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle
 function LivestockZonesAnimalMoodle:getGrowStageMoodle(isoAnimal, moodle, minutesStamp)
-    -- todo: causes flickering
     local growStage = self.growStage:getGrowStage(isoAnimal);
-    local texture = self:getTexture(growStage);
-    local ttl = minutesStamp + 100;
+    -- not confirmed, but
+    -- growth stage can occur once a day
+    local minutesToNextDay = (24 - math.floor(getGameTime():getTimeOfDay())) * 60 - getGameTime():getMinutes();
+
+    if minutesToNextDay == 0 then
+        minutesToNextDay = 24 * 60;
+    end
+
+    local ttl = minutesStamp + minutesToNextDay;
+
+    if moodle and moodle.value == growStage then
+        moodle.ttl = ttl;
+
+        return moodle;
+    end
+
+    local mc = self:getMoodleConfig(growStage);
     local color;
 
     if growStage == animalGrowStageType.geriatric then
@@ -98,10 +132,12 @@ function LivestockZonesAnimalMoodle:getGrowStageMoodle(isoAnimal, moodle, minute
     end
 
     if not moodle then
-        return animalMoodle.new(animalMoodleType.growStage, texture, color, ttl);
+        return animalMoodle.new(animalMoodleType.growStage, growStage, mc.tooltip, mc.texture, color, ttl);
     end
 
-    moodle.texture = texture;
+    moodle.value = growStage;
+    moodle.tooltip = mc.tooltip;
+    moodle.texture = mc.texture;
     moodle.color = color;
     moodle.ttl = ttl;
 end
@@ -110,18 +146,29 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getHealthMoodle(isoAnimal, moodle, minutesStamp)
+    local moodleType = animalMoodleType.health;
     local value = isoAnimal:getHealth();
-    if value > 0.9 then
+    if value > moodleThreshold[moodleType] then
         return nil;
     end
 
-    local color = self:getMoodleColor(value, negativeColorMax, negativeColorMin, negativeColorAlpha);
     local ttl = minutesStamp + 1;
 
-    if not moodle then
-        return animalMoodle.new(animalMoodleType.health, self:getTexture(animalMoodleType.health), color, ttl);
+    if moodle and moodle.value == value then
+        moodle.ttl = ttl;
+
+        return moodle;
     end
 
+    local color = self:getMoodleColor(value, negativeColorMin, negativeColorMax, negativeColorAlpha);
+
+    if not moodle then
+        local mc = self:getMoodleConfig(moodleType)
+
+        return animalMoodle.new(moodleType, value, mc.tooltip, mc.texture, color, ttl);
+    end
+
+    moodle.value = value;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -132,18 +179,29 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getHungryMoodle(isoAnimal, moodle, minutesStamp)
+    local moodleType = animalMoodleType.hungry;
     local value = isoAnimal:getHunger();
-    if value < 0.3 then
+    if value < moodleThreshold[moodleType] then
         return nil;
     end
 
-    local color = self:getMoodleColor(value, negativeColorMax, negativeColorMin, negativeColorAlpha);
-    local ttl = minutesStamp + 1;
+    local ttl = minutesStamp + 2;
 
-    if not moodle then
-        return animalMoodle.new(animalMoodleType.hungry, self:getTexture(animalMoodleType.hungry), color, ttl);
+    if moodle and moodle.value == value then
+        moodle.ttl = ttl;
+
+        return moodle;
     end
 
+    local color = self:getMoodleColor(value, negativeColorMax, negativeColorMin, negativeColorAlpha);
+
+    if not moodle then
+        local mc = self:getMoodleConfig(moodleType)
+
+        return animalMoodle.new(moodleType, value, mc.tooltip, mc.texture, color, ttl);
+    end
+
+    moodle.value = value;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -154,18 +212,29 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getThirstyMoodle(isoAnimal, moodle, minutesStamp)
+    local moodleType = animalMoodleType.thirsty;
     local value = isoAnimal:getThirst();
-    if value < 0.3 then
+    if value < moodleThreshold[moodleType] then
         return nil;
     end
 
-    local color = self:getMoodleColor(value, negativeColorMax, negativeColorMin, negativeColorAlpha);
-    local ttl = minutesStamp + 1;
+    local ttl = minutesStamp + 2;
 
-    if not moodle then
-        return animalMoodle.new(animalMoodleType.thirsty, self:getTexture(animalMoodleType.thirsty), color, ttl);
+    if moodle and moodle.value == value then
+        moodle.ttl = ttl;
+
+        return moodle;
     end
 
+    local color = self:getMoodleColor(value, negativeColorMax, negativeColorMin, negativeColorAlpha);
+
+    if not moodle then
+        local mc = self:getMoodleConfig(moodleType)
+
+        return animalMoodle.new(moodleType, value, mc.tooltip, mc.texture, color, ttl);
+    end
+
+    moodle.value = value;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -176,19 +245,30 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getAnxietyMoodle(isoAnimal, moodle, minutesStamp)
+    local moodleType = animalMoodleType.anxiety;
     local value = isoAnimal:getStress();
-    if value < 40.0 then
+    if value < moodleThreshold[moodleType] then
         return nil;
+    end
+
+    local ttl = minutesStamp + 5;
+
+    if moodle and moodle.value == value then
+        moodle.ttl = ttl;
+
+        return moodle;
     end
 
     local ratio = math.min(value, 100) / 100;
     local color = self:getMoodleColor(ratio, negativeColorMax, negativeColorMin, negativeColorAlpha);
-    local ttl = minutesStamp + 3;
 
     if not moodle then
-        return animalMoodle.new(animalMoodleType.anxiety, self:getTexture(animalMoodleType.anxiety), color, ttl);
+        local mc = self:getMoodleConfig(moodleType);
+
+        return animalMoodle.new(moodleType, value, mc.tooltip, mc.texture, color, ttl);
     end
 
+    moodle.value = value;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -199,27 +279,37 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getMilkMoodle(isoAnimal, moodle, minutesStamp)
+    local moodleType = animalMoodleType.milk;
     if not isoAnimal:canBeMilked() then
         return nil;
     end
 
     local animalData = isoAnimal:getData();
+    local milk = animalData:getMilkQuantity();
 
-    if animalData:getMilkQuantity() < 0.1 then
+    if milk < moodleThreshold[moodleType] then
         return;
     end
 
-    local milk = animalData:getMilkQuantity();
-    local milkMax = animalData:getMaxMilk();
-    local ratio = milk / milkMax;
+    local ttl = minutesStamp + 5;
 
-    local color = self:getMoodleColor(ratio, positiveColorMin, positiveColorMax, positiveColorAlpha);
-    local ttl = minutesStamp + 10;
+    if moodle and moodle.value == milk then
+        moodle.ttl = ttl;
 
-    if not moodle then
-        return animalMoodle.new(animalMoodleType.milk, self:getTexture(animalMoodleType.milk), color, ttl);
+        return moodle;
     end
 
+    local milkMax = animalData:getMaxMilk();
+    local ratio = milk / milkMax;
+    local color = self:getMoodleColor(ratio, positiveColorMin, positiveColorMax, positiveColorAlpha);
+
+    if not moodle then
+        local mc = self:getMoodleConfig(moodleType);
+
+        return animalMoodle.new(moodleType, milk, mc.tooltip, mc.texture, color, ttl);
+    end
+
+    moodle.value = milk;
     moodle.color = color;
     moodle.ttl = ttl;
 
@@ -230,22 +320,37 @@ end
 --- @param moodle AnimalMoodle | nil
 --- @return AnimalMoodle | nil
 function LivestockZonesAnimalMoodle:getShearMoodle(isoAnimal, moodle, minutesStamp)
-    if not isoAnimal:readyToBeSheared() then
+    local moodleType = animalMoodleType.shear;
+    if not isoAnimal:canBeSheared() then
         return nil;
     end
 
     local animalData = isoAnimal:getData();
     local wool = animalData:getWoolQuantity();
-    local woolMax = animalData:getMaxWool();
-    local ratio = wool / woolMax;
 
-    local color = self:getMoodleColor(ratio, positiveColorMax, positiveColorMin, positiveColorAlpha);
-    local ttl = minutesStamp + 10;
-
-    if not moodle then
-        return animalMoodle.new(animalMoodleType.shear, self:getTexture(animalMoodleType.shear), color, ttl);
+    if wool < moodleThreshold[moodleType] then
+        return nil;
     end
 
+    local ttl = minutesStamp + 5;
+
+    if moodle and moodle.value == wool then
+        moodle.ttl = ttl;
+
+        return moodle;
+    end
+
+    local woolMax = animalData:getMaxWool();
+    local ratio = wool / woolMax;
+    local color = self:getMoodleColor(ratio, positiveColorMax, positiveColorMin, positiveColorAlpha);
+
+    if not moodle then
+        local mc = self:getMoodleConfig(moodleType)
+
+        return animalMoodle.new(moodleType, wool, mc.tooltip, mc.texture, color, ttl);
+    end
+
+    moodle.value = wool;
     moodle.color = color;
     moodle.ttl = ttl;
 

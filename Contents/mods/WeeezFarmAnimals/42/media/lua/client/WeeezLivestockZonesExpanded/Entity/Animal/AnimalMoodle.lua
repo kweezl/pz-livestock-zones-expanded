@@ -4,7 +4,9 @@ require("ISBaseObject");
 local animalMoodle = {};
 
 --- @class AnimalMoodle
---- @field public moodle string
+--- @field public moodleType string
+--- @field public tooltip string
+--- @field public value any
 --- @field public texture Texture
 --- @field public color ColorInfo
 --- @field public ttl number
@@ -16,19 +18,22 @@ function AnimalMoodle:isValid(minutesStamp)
     return self.ttl > minutesStamp;
 end
 
---- @param moodle string
+--- @param moodleType string
+--- @param value any
 --- @param texture Texture
 --- @param color ColorInfo
---- @param ttl number
+--- @param minutesStamp number
 --- @return AnimalMoodle
-function animalMoodle.new(moodle, texture, color, ttl)
+function animalMoodle.new(moodleType, value, tooltip, texture, color, minutesStamp)
     local self = {};
     setmetatable(self, { __index = AnimalMoodle })
 
-    self.moodle = moodle;
+    self.moodleType = moodleType;
+    self.value = value;
+    self.tooltip = tooltip;
     self.texture = texture;
     self.color = color;
-    self.ttl = ttl;
+    self.ttl = minutesStamp;
 
     return self;
 end
