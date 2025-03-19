@@ -1,7 +1,7 @@
 --- @module livestockZoneStat
 local livestockZoneStat = {};
 
-local list = ArrayList:new();
+local list = ArrayList.new();
 
 --- @enum stat
 local stat = {}

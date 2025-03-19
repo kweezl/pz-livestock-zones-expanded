@@ -70,6 +70,7 @@ function LivestockZonesInfoAnimals:setAnimalSelected(animal)
     for i = 1, #items do
         local itemAnimal = items[i].item.animal;
         if itemAnimal:getId() == animal:getId() then
+            self.previousSelected = i;
             self.animalList.selected = i;
             self.animalList:ensureVisible(i);
         end
@@ -215,6 +216,11 @@ function LivestockZonesInfoAnimals:onMouseDownAnimalListItem(item)
     local hitY = height <= inputY and height + 20 >= inputY;
 
     if hitX and hitY then
+        if self.previousSelected ~= self.animalList.selected then
+            self.previousSelected = self.animalList.selected;
+            self:triggerOnAnimalSelected(animal);
+        end
+
         -- open info window
         -- todo: create better info info window and trace duplicates
         if luautils.walkAdj(self.player, isoAnimal:getSquare()) then
@@ -229,8 +235,25 @@ function LivestockZonesInfoAnimals:onMouseDownAnimalListItem(item)
     hitX = width <= inputX and width + 20 >= inputX;
 
     if hitX and hitY then
+        if self.previousSelected ~= self.animalList.selected then
+            self.previousSelected = self.animalList.selected;
+            self:triggerOnAnimalSelected(animal);
+        end
+
+        self.previousSelected = self.animalList.selected;
         -- begin pet timed action
         AnimalContextMenu.onPetAnimal(isoAnimal, self.player);
+
+        return;
+    end
+
+    if self.previousSelected == self.animalList.selected then
+        self.animalList.selected = -1;
+        self.previousSelected = -1;
+        self:triggerOnAnimalSelected(nil);
+    else
+        self.previousSelected = self.animalList.selected;
+        self:triggerOnAnimalSelected(animal);
     end
 end
 
@@ -273,6 +296,20 @@ function LivestockZonesInfoAnimals:close()
     ISPanel.close(self);
 end
 
+--- @param target table
+--- @param fn function
+function LivestockZonesInfoAnimals:setOnAnimalSelected(target, fn)
+    self.onAnimalSelectedTarget = target;
+    self.onAnimalSelectedFn = fn;
+end
+
+--- @param animal LivestockZonesAnimal | nil
+function LivestockZonesInfoAnimals:triggerOnAnimalSelected(animal)
+    if self.onAnimalSelectedFn and self.onAnimalSelectedTarget then
+        self.onAnimalSelectedFn(self.onAnimalSelectedTarget, animal)
+    end
+end
+
 --- @param x number
 --- @param y number
 --- @param width number
@@ -287,9 +324,13 @@ function LivestockZonesInfoAnimals:new(x, y, width, height, player, animalsProvi
     o.player = player;
     o.animalsProvider = animalsProvider;
     o.livestockZone = livestockZone;
+    o.previousSelected = -1;
     o.minimumWidth = 280;
     o.minimumHeight = 0;
     o.background = false;
+
+    o.onAnimalSelectedTarget = nil;
+    o.onAnimalSelectedFn = nil;
 
     -- todo: move to config
     o.infoTexture = getTexture("media/ui/Entity/blueprint_info.png");

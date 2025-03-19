@@ -15,4 +15,29 @@ livestockZonesEvents.onPetAnimalAction = events.new();
 livestockZonesEvents.onPetZoneAnimalsStart = events.new();
 livestockZonesEvents.onPetZoneAnimalsStop = events.new();
 
+local tickEventDebugEnabled = false;
+local tickNumThreshold = 300;
+local tickNum = 0;
+
+local function onTick()
+    tickNum = tickNum + 1;
+
+    if tickNum < tickNumThreshold then
+        return;
+    end
+
+    tickNum = 0;
+    print("------- event debug begin ---------");
+
+    for name, events in pairs(livestockZonesEvents) do
+        print(name .. ": " .. tostring(#events));
+    end
+
+    print("------- event debug end ---------");
+end
+
+if tickEventDebugEnabled then
+    Events.OnTick.Add(onTick);
+end
+
 return livestockZonesEvents;

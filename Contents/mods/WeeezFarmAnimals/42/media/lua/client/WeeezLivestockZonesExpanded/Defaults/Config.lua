@@ -44,22 +44,22 @@ local config = {
         },
         [stat.water] = {
             perk = Perks.Husbandry,
-            level = 2,
+            level = 0,
             title = getText("IGUI_DesignationZone_Water"),
         },
         [stat.food] = {
             perk = Perks.Husbandry,
-            level = 2,
+            level = 0,
             title = getText("IGUI_DesignationZone_Food"),
         },
         [stat.dung] = {
             perk = Perks.Husbandry,
-            level = 3,
+            level = 0,
             title = getText("IGUI_DesignationZone_Dung"),
         },
         [stat.feather] = {
             perk = Perks.Husbandry,
-            level = 3,
+            level = 0,
             title = getText("IGUI_DesignationZone_Feathers"),
         },
         [stat.zoneSize] = {
@@ -174,6 +174,22 @@ local config = {
         [animalMoodleType.anxiety] = 20.0,
         [animalMoodleType.shear] = 1.0,
         [animalMoodleType.milk] = 0.1,
+    },
+
+    actions = {
+        base = {
+            texture = getTexture("media/ui/gears.png"),
+            tooltip = "Base animal action tooltip. Should not be displayed.",
+        },
+        list = {
+            pet = {
+                tooltips = {
+                    default = getText("ContextMenu_PetAnimal"),
+                    cantBePet = getText("ContextMenu_PetAnimal_CantBePet"),
+                    inHutch = getText("ContextMenu_PetAnimal_InHutch"),
+                },
+            },
+        },
     },
 };
 

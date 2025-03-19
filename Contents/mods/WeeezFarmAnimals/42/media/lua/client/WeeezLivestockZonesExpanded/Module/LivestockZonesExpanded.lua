@@ -8,6 +8,7 @@ local livestockZonesStatsProvider = require("WeeezLivestockZonesExpanded/DataPro
 local livestockZonesAnimalTypes = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalTypes");
 local livestockZonesAnimalMoodle = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalMoodle");
 local livestockZonesAnimalGrowStage = require("WeeezLivestockZonesExpanded/DataProviders/LivestockZonesAnimalGrowStage");
+local animalStatsProvider = require("WeeezLivestockZonesExpanded/DataProviders/AnimalStatsProvider");
 local livestockZonesController = require("WeeezLivestockZonesExpanded/Controllers/LivestockZonesController");
 local petZoneAnimals = require("WeeezLivestockZonesExpanded/TimedActions/PetZoneAnimals");
 
@@ -31,8 +32,10 @@ local petAnimals;
 local animalMoodle;
 --- @type LivestockZonesAnimalGrowStage
 local growStage;
+--- @type AnimalStatsProvider
+local animalStats;
 
----@module livestockZonesExpanded
+---@module "WeeezLivestockZonesExpanded/Module/LivestockZonesExpanded"
 local livestockZonesExpanded = {};
 
 function livestockZonesExpanded.getZonesIcons()
@@ -135,6 +138,17 @@ function livestockZonesExpanded.getGrowStage()
     end
 
     return growStage;
+end
+
+--- @return AnimalStatsProvider
+function livestockZonesExpanded.getAnimalStats()
+    if not animalStats then
+        animalStats = animalStatsProvider.new(
+            livestockZonesExpanded.getGrowStage()
+        );
+    end
+
+    return animalStats;
 end
 
 --- @param player IsoPlayer
