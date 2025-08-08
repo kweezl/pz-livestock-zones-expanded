@@ -26,7 +26,7 @@ function ISEquippedItem:prerender()
     if ui and ui.windows[livestockZoneWindowStyle] and ui.windows[livestockZoneWindowStyle].instance then
         self.zoneBtn:setImage(self.zoneIconOn);
     else
-        self.zoneBtn:setImage(self.zoneIcon);
+        self.zoneBtn:setImage(self.zoneIconOff);
     end
 end
 
