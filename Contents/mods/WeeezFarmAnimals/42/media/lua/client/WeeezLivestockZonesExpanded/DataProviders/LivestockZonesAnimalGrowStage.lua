@@ -32,6 +32,22 @@ function LivestockZonesAnimalGrowStage:getGrowStage(isoAnimal)
     return animalGrowStageType.adult;
 end
 
+--- @see AnimalMoodle
+--- @param isoAnimal IsoAnimal
+--- @return string
+function LivestockZonesAnimalGrowStage:getDaysToNextStage(isoAnimal)
+    if isoAnimal:isBaby() then
+        local stageDef = self.animalTypes:getAnimalDefinitionNextStage(isoAnimal:getAnimalType());
+
+        return stageDef.ageToGrow
+    end
+
+    if isoAnimal:isGeriatric() then
+        return -1;
+    end
+
+    return isoAnimal:getData():getMaxAgeGeriatric();
+end
 
 --- @param animalTypes LivestockZonesAnimalTypes
 --- @return LivestockZonesAnimalGrowStage

@@ -1,5 +1,7 @@
 require("ISUI/ISPanel");
 
+local module = require("WeeezLivestockZonesExpanded/Module/LivestockZonesExpanded");
+
 --- @class LivestockZonesInfo: ISPanel
 --- @field private zoneController LivestockZonesController
 --- @field private livestockZone LivestockZone | nil
@@ -9,6 +11,9 @@ require("ISUI/ISPanel");
 --- @field private detailsPanel LivestockZonesInfoDetails | nil
 --- @field private animalsPanel LivestockZonesInfoAnimals | nil
 LivestockZonesInfo = ISPanel:derive("LivestockZonesInfo");
+
+LivestockZonesInfo.detailsModeZone = "zone";
+LivestockZonesInfo.detailsModeAnimal = "animal";
 
 function LivestockZonesInfo:initialise()
     ISPanel.initialise(self);
@@ -48,9 +53,14 @@ function LivestockZonesInfo:createDynamicChildren()
         self.detailsTable = nil;
     end
 
-    if self.detailsPanel then
-        ISUIElement.removeChild(self, self.detailsPanel);
-        self.detailsPanel = nil;
+    if self.zoneDetailsPanel then
+        ISUIElement.removeChild(self, self.zoneDetailsPanel);
+        self.zoneDetailsPanel = nil;
+    end
+
+    if self.animalDetailsPanel then
+        ISUIElement.removeChild(self, self.animalDetailsPanel);
+        self.animalDetailsPanel = nil;
     end
 
     if self.animalsPanel then
@@ -69,7 +79,8 @@ function LivestockZonesInfo:createDynamicChildren()
     self:createTitlePanel();
     self:createControlsPanel();
     self:createOverlayPanel();
-    self:createDetailsPanel();
+    self:createZoneDetailsPanel();
+    self:createAnimalDetailsPanel();
     self:createAnimalsPanel();
     self:xuiRecalculateLayout();
 end
@@ -141,9 +152,9 @@ function LivestockZonesInfo:createOverlayPanel()
     self:onPetZoneAnimalsIsRunning(self.livestockZone);
 end
 
-function LivestockZonesInfo:createDetailsPanel()
-    ---@type LivestockZonesInfoControls
-    self.detailsPanel = ISXuiSkin.build(
+function LivestockZonesInfo:createZoneDetailsPanel()
+    ---@type LivestockZonesInfoDetails
+    self.zoneDetailsPanel = ISXuiSkin.build(
         self.xuiSkin,
         "S_NeedsAStyle",
         LivestockZonesInfoDetails,
@@ -154,14 +165,32 @@ function LivestockZonesInfo:createDetailsPanel()
         self.livestockZone,
         self.zoneController:getZoneStats(self.livestockZone)
     );
-    self.detailsPanel:initialise();
-    self.detailsPanel:instantiate();
-    self.detailsPanel.drawDebugLines = self.drawDebugLines;
-    self:addChild(self.detailsPanel);
+    self.zoneDetailsPanel:initialise();
+    self.zoneDetailsPanel:instantiate();
+    self.zoneDetailsPanel.drawDebugLines = self.drawDebugLines;
+    self:addChild(self.zoneDetailsPanel);
+end
+
+function LivestockZonesInfo:createAnimalDetailsPanel()
+    ---@type LivestockZonesInfoAnimalDetails
+    self.animalDetailsPanel = ISXuiSkin.build(
+        self.xuiSkin,
+        "S_NeedsAStyle",
+        LivestockZonesInfoAnimalDetails,
+        0,
+        0,
+        10,
+        10,
+        module.getAnimalStats()
+    );
+    self.animalDetailsPanel.drawDebugLines = self.drawDebugLines;
+    self.animalDetailsPanel:initialise();
+    self.animalDetailsPanel:instantiate();
+    self:addChild(self.animalDetailsPanel);
 end
 
 function LivestockZonesInfo:createAnimalsPanel()
-    ---@type LivestockZonesInfoControls
+    ---@type LivestockZonesInfoAnimals
     self.animalsPanel = ISXuiSkin.build(
         self.xuiSkin,
         "S_NeedsAStyle",
@@ -174,10 +203,11 @@ function LivestockZonesInfo:createAnimalsPanel()
         self.zoneController:getAnimalsProvider(),
         self.livestockZone
     );
+    self.animalsPanel.drawDebugLines = self.drawDebugLines;
+    self.animalsPanel:setOnAnimalSelected(self, self.onAnimalSelected);
     self.animalsPanel:initialise();
     self.animalsPanel:instantiate();
     self:addChild(self.animalsPanel);
-    self.animalsPanel.drawDebugLines = self.drawDebugLines;
 end
 
 function LivestockZonesInfo:calculateLayout(preferredWidth, preferredHeight)
@@ -217,16 +247,21 @@ function LivestockZonesInfo:calculateLayout(preferredWidth, preferredHeight)
     local detailsPanelWidth = 0;
     local nextY = controlsPanelHeight + panelPadding;
 
-    if self.detailsPanel then
-        self.detailsPanel:calculateLayout(width, height - controlsPanelHeight - panelPadding);
-        self.detailsPanel:setX(0);
-        self.detailsPanel:setY(nextY);
-        detailsPanelWidth = self.detailsPanel:getWidth();
+    if self.zoneDetailsPanel then
+        self.zoneDetailsPanel:calculateLayout(self.detailsPanelWidth, height - controlsPanelHeight - panelPadding);
+        self.zoneDetailsPanel:setX(0);
+        self.zoneDetailsPanel:setY(nextY);
+    end
+
+    if self.animalDetailsPanel then
+        self.animalDetailsPanel:calculateLayout(self.detailsPanelWidth, height - controlsPanelHeight - panelPadding);
+        self.animalDetailsPanel:setX(0);
+        self.animalDetailsPanel:setY(nextY);
     end
 
     if self.animalsPanel then
-        self.animalsPanel:calculateLayout(width - detailsPanelWidth - 5, height - controlsPanelHeight - panelPadding);
-        self.animalsPanel:setX(detailsPanelWidth + 5);
+        self.animalsPanel:calculateLayout(width - self.detailsPanelWidth - 5, height - controlsPanelHeight - panelPadding);
+        self.animalsPanel:setX(self.detailsPanelWidth + 5);
         self.animalsPanel:setY(nextY);
     end
 
@@ -274,8 +309,16 @@ function LivestockZonesInfo:close()
         self.overlayPanel:close();
     end
 
-    if self.detailsPanel then
-        self.detailsPanel:close();
+    if self.animalDetailsPanel then
+        self.animalDetailsPanel:close();
+    end
+
+    if self.animasPanel then
+        self.animasPanel:close();
+    end
+
+    if self.zoneDetailsPanel then
+        self.zoneDetailsPanel:close();
     end
 
     if self.overlayPanel then
@@ -387,6 +430,7 @@ function LivestockZonesInfo:onPetAnimal(livestockZone, animal)
     if livestockZone:getId() == self.livestockZone:getId() then
         self.overlayPanel:setPetAnimal(animal);
         self.animalsPanel:setAnimalSelected(animal);
+        self:onAnimalSelected(animal);
     end
 end
 
@@ -407,6 +451,23 @@ function LivestockZonesInfo:onPetAnimalsStop(livestockZone)
     self.overlayPanel:deactivate();
     self.titlePanel:setVisible(true);
     self.controlsPanel:setVisible(true);
+end
+
+
+--- @param animal LivestockZonesAnimal | nil
+function LivestockZonesInfo:onAnimalSelected(animal)
+    if animal then
+        self.detailsMode = self.detailsModeAnimal;
+        self.zoneDetailsPanel:setVisible(false);
+        self.animalDetailsPanel:setAnimal(animal);
+        self.animalDetailsPanel:setVisible(true);
+
+        return;
+    end
+
+    self.detailsMode = self.detailsModeZone;
+    self.zoneDetailsPanel:setVisible(true);
+    self.animalDetailsPanel:setVisible(false);
 end
 
 --- @param x number
@@ -436,6 +497,9 @@ function LivestockZonesInfo:new(x, y, width, height, player, zoneController)
 
     o.minimumWidth = 600;
     o.minimumHeight = 0;
+    o.detailsPanelWidth = 300;
+
+    o.detailsMode = o.detailsModeZone;
 
     o.titleAndControlsCachedHeight = 0;
 

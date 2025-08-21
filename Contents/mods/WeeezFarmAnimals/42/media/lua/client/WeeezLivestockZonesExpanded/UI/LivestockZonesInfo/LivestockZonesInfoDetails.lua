@@ -163,27 +163,15 @@ function LivestockZonesInfoDetails:createCellElement(parentTable, columnIndex, r
     parentTable:cell(columnIndex, rowIndex).anchorLeft = anchorLeft;
 end
 
-function LivestockZonesInfoDetails:calculateLayout(preferredWidth, preferredHeight)
-    local width = math.max(
-        self.minimumWidth,
-        self.detailsBoxMaxTitleSize + self.detailsBoxMaxValueSize + self.detailsBoxPadding * 4
-    )
-    --local width = math.max(self.minimumWidth, preferredWidth or 0);
+function LivestockZonesInfoDetails:calculateLayout(preferreWith, preferredHeight)
     local height = math.max(self.minimumHeight, preferredHeight or 0);
 
     if self.detailsBox then
-        self.detailsBox:setWidth(width);
+        self.detailsBox:setWidth(preferreWith);
         self.detailsBox:setHeight(height);
-
-        if self.detailsBox.vscroll then
-            width = width + self.detailsBox.vscroll:getWidth();
-            self.detailsBox:setWidth(width);
-            self.detailsBox.vscroll:setHeight(self.detailsBox:getHeight());
-            self.detailsBox.vscroll:setX(self.detailsBox:getWidth() - self.detailsBox.vscroll:getWidth());
-        end
     end
 
-    self:setWidth(width);
+    self:setWidth(preferreWith);
     self:setHeight(height);
 end
 

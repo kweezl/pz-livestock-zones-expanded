@@ -5,6 +5,10 @@ IGUI_EN = {
 
     IGUI_animal_baby = "Baby",
 
+    IGUI_Animal_Stat_GrowStage = "Grow stage",
+    IGUI_Animal_Stat_AgeDays = "Age days",
+    IGUI_Animal_Stat_NextGrowStageDays = "Next grow stage",
+
     IGUI_AnimalGroup_all = "All",
     IGUI_AnimalGroup_cow = "Cattle",
     IGUI_AnimalGroup_chicken = "Chickens",

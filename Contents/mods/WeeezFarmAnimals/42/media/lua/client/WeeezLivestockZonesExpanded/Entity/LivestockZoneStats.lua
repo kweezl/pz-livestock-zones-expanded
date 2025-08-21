@@ -63,7 +63,7 @@ function LivestockZoneStats:getFeedingTroughs()
     return self.feedingTroughs;
 end
 
---- @param feedingTrough number | nil
+--- @param feedingTroughs number | nil
 function LivestockZoneStats:setFeedingTroughs(feedingTroughs)
     self.feedingTroughs = feedingTroughs;
 end
