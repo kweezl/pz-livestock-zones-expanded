@@ -150,8 +150,15 @@ function LivestockZonesStatsProvider:getWaterTotal(livestockZone)
 
         if food:isPureWater(true) then
             local fluidContainer = food:getFluidContainer();
-            local millilitres = fluidContainer:getAmount() * 1000
-            result = result + millilitres;
+
+            if not fluidContainer and food:getWorldItem() ~= nil then
+                fluidContainer = food:getWorldItem():getFluidContainer()
+            end
+
+            if fluidContainer then
+                local millilitres = fluidContainer:getAmount() * 1000
+                result = result + millilitres;
+            end
         end
     end
 
